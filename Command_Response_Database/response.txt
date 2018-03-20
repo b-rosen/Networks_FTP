@@ -1,4 +1,12 @@
+Command_OK 200
+Command_Unnecessary 202
 Service_OK 220
 Closed 221
-Need_Password 331
 Logged_In 230
+Need_Password 331
+Need_Account 332
+Service_Down 421
+Syntax_Error 500
+Argument_Error 501
+Bad_Sequence 503
+Not_Logged_In 530
