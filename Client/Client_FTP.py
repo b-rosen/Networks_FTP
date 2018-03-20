@@ -1,5 +1,4 @@
 from socket import *
-import response
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
