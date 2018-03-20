@@ -1,8 +1,23 @@
 import threading
 import Users
+import response
 
 CRLF = '\r\n'
 
+# commandFile = open('../Command_Response_Database/command.txt', 'r')
+# commands = {}
+# for line in commandFile:
+#     command, function = line.split(' ', 1)
+#     commands[command] = function
+# commandFile.close()
+#
+# replyCodeFile = open('../Command_Response_Database/response.txt', 'r')
+# replyCodes = {}
+#
+# for line in replyCodeFile:
+#     message, code = line.split(' ', 1)
+#     replyCodes[message] = code
+# replyCodeFile.close()
 class UserThread (threading.Thread):
     msg = str()
     username = str()
@@ -13,7 +28,7 @@ class UserThread (threading.Thread):
         self.name = threadName
         self.conn_socket = conn_socket
         self.address = address
-        self.Respond(replyCodes['Service_OK'])
+        self.Respond('Service_OK')
     # def __init__(self):
     #     self.name = "hello"
     def run(self):
@@ -22,17 +37,17 @@ class UserThread (threading.Thread):
         self.msg = self.conn_socket.recv(2048)
             # print 'The message (from ' + str(address) + ') is: ' + self.msg
             # self.conn_socket.send(self.msg)
-        ExecuteCommand(self, self.msg)
+        self.ExecuteCommand(self.msg)
 
     def Respond(self, code):
-        code = code + '\r\n'
+        code = response.replyCodes[code] + '\r\n'
         self.conn_socket.send(code)
 
     def Receive(self, bufferSize=2048):
         message = self.conn_socket.recv(bufferSize)
-        cmd, args = ParseCommand(message)
+        cmd, args = self.ParseCommand(message)
         if cmd == "QUIT":
-            commandList[cmd](args)
+            commands[cmd](args)
             return
         return cmd, args
 
@@ -40,17 +55,46 @@ class UserThread (threading.Thread):
         # TODO: Sends back ok message, waits for password
         self.username = args[0]
         # TODO: check if username exists
-        self.Respond(replyCodes['Need_Password'])
+        self.Respond('Need_Password')
         cmd, args = self.Receive()
         if cmd == "PASS":
             if args[0] == Users.users[self.username]:
-                self.Respond(replyCodes['Logged_In'])
+                self.Respond('Logged_In')
                 self.run()
 
     def Logout(self, args):
-        self.Respond(replyCodes['Closed'])
+        self.Respond('Closed')
         self.conn_socket.close()
         print ('\n' + self.name +  ' has been closed')
+
+    def NoOp(self):
+        self.Respond('Service_OK')
+
+    def ParseCommand(self, msg):
+        # TODO: parse cmd (strip out key stuff)
+        # Removes the CRLF command terminator
+        message = msg.split('\r\n', 1)
+        message = message[0].split(" ", 1)
+        command = str.upper(message.pop(0))
+        return (command, message)
+
+    commands = {
+        'USER': Login,
+        'QUIT': Logout,
+        'NOOP': NoOp
+    }
+
+    def ExecuteCommand(self, message):
+        cmd, msg = self.ParseCommand(message)
+        # TODO: check if there is another command in the data sent
+        try:
+            self.commands[cmd](self, msg)
+        except KeyError:
+            print 'Wrong Command Entered'
+            self.run()
+        # except TypeError:
+        #     print 'Too Many Arguments'
+        #     userThread.run()
     '''
     USER <SP> <username> <CRLF>
     PASS <SP> <password> <CRLF>
@@ -154,35 +198,3 @@ class UserThread (threading.Thread):
          553 Requested action not taken.
              File name not allowed.
     '''
-
-    commandList = {
-        'USER': Login,
-        'QUIT': Logout
-    }
-
-replyCodes = {
-    'Service_OK': '220 Welcome',
-    'Closed': '221 Connection has been closed',
-    'Need_Password': '331 User is correct. Please enter password',
-    'Logged_In': '230 Login Successful'
-}
-
-def ParseCommand(msg):
-    # TODO: parse cmd (strip out key stuff)
-    # Removes the CRLF command terminator
-    message = msg.split('\r\n', 1)
-    message = message[0].split(" ", 1)
-    command = str.upper(message.pop(0))
-    return (command, message)
-
-def ExecuteCommand(userThread, message):
-    cmd, msg = ParseCommand(message)
-    # TODO: check if there is another command in the data sent
-    try:
-        userThread.commandList[cmd](userThread, msg)
-    except KeyError:
-        print 'Wrong Command Entered'
-        userThread.run()
-    # except TypeError:
-    #     print 'Too Many Arguments'
-    #     userThread.run()
