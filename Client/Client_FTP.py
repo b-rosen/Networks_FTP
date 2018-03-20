@@ -1,4 +1,5 @@
 from socket import *
+import response
 
 # For Local Server
 s_name = 'localhost'
@@ -29,7 +30,7 @@ def Receive(bufferSize=2048):
     # if code == "QUIT":
     #     commandList[cmd](args)
     #     return
-    return code
+    return str(code)
 
 def Respond(code):
     code = code + CRLF
@@ -37,32 +38,31 @@ def Respond(code):
 
 def Login():
     code = Receive()
-    if code == replyCodes['Service_OK']:
+    if code == response.replyCodes['Service_OK']:
         print 'Me: Service ok'
         Respond('USER ' + username)
         code = Receive()
-        if code == replyCodes['Need_Password']:
+        if code == response.replyCodes['Need_Password']:
             Respond('PASS ' + password)
             code = Receive()
             print 'Me: Sent password'
-            if code == replyCodes['Logged_In']:
+            if code == response.replyCodes['Logged_In']:
                 print 'Me: Logged in'
                 return
-
 def Logout():
     Respond('QUIT')
     code = Receive()
-    if code == replyCodes['Closed']:
+    if code == response.replyCodes['Closed']:
         print 'Me: Successfully Logged Off'
         c_socket.close()
         print 'Me: The connection was closed'
 
-replyCodes = {
-    'Service_OK': 220,
-    'Closed': 221,
-    'Need_Password': 331,
-    'Logged_In': 230
-}
+# replyCodes = {
+#     'Service_OK': 220,
+#     'Closed': 221,
+#     'Need_Password': 331,
+#     'Logged_In': 230
+# }
 
 msg = str()
 cmd = str()
