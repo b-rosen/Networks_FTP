@@ -1,4 +1,5 @@
 from Tkinter import *
+import tkMessageBox
 from PIL import Image, ImageTk
 
 clientWindow = Tk()
@@ -19,5 +20,6 @@ connectButton.place(relx=0,x=415,y=15,anchor=CENTER)
 
 serverList = Listbox(clientWindow,height=15,width=50)
 serverList.place(relx=0,x=320,y=180,anchor=CENTER)
+
 
 clientWindow.mainloop()
