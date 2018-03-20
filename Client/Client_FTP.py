@@ -1,5 +1,4 @@
 from socket import *
-import response
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -8,7 +7,6 @@ for line in responsesFile:
     code = code.rstrip()
     replyCodes[msg] = code
 responsesFile.close()
-print replyCodes
 # For Local Server
 s_name = 'localhost'
 s_port = 2400
