@@ -1,0 +1,3 @@
+users = {
+    'Benjy': "Hello"
+}
