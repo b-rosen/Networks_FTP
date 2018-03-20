@@ -1,6 +1,13 @@
 import threading
 import Users
-import response
+
+responsesFile = open('../Command_Response_Database/response.txt', 'r')
+replyCodes = {}
+for line in responsesFile:
+    msg, code = line.split(' ', 1)
+    code = code.rstrip()
+    replyCodes[msg] = code
+responsesFile.close()
 
 CRLF = '\r\n'
 
@@ -40,7 +47,7 @@ class UserThread (threading.Thread):
         self.ExecuteCommand(self.msg)
 
     def Respond(self, code):
-        code = response.replyCodes[code] + '\r\n'
+        code = replyCodes[code] + '\r\n'
         self.conn_socket.send(code)
 
     def Receive(self, bufferSize=2048):
@@ -67,8 +74,9 @@ class UserThread (threading.Thread):
         self.conn_socket.close()
         print ('\n' + self.name +  ' has been closed')
 
-    def NoOp(self):
+    def NoOp(self, args):
         self.Respond('Service_OK')
+        self.run()
 
     def ParseCommand(self, msg):
         # TODO: parse cmd (strip out key stuff)

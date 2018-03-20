@@ -1,6 +1,14 @@
 from socket import *
 import response
 
+responsesFile = open('../Command_Response_Database/response.txt', 'r')
+replyCodes = {}
+for line in responsesFile:
+    msg, code = line.split(' ', 1)
+    code = code.rstrip()
+    replyCodes[msg] = code
+responsesFile.close()
+print replyCodes
 # For Local Server
 s_name = 'localhost'
 s_port = 2400
@@ -38,25 +46,30 @@ def Respond(code):
 
 def Login():
     code = Receive()
-    if code == response.replyCodes['Service_OK']:
+    if code == replyCodes['Service_OK']:
         print 'Me: Service ok'
         Respond('USER ' + username)
         code = Receive()
-        if code == response.replyCodes['Need_Password']:
+        if code == replyCodes['Need_Password']:
             Respond('PASS ' + password)
             code = Receive()
             print 'Me: Sent password'
-            if code == response.replyCodes['Logged_In']:
+            if code == replyCodes['Logged_In']:
                 print 'Me: Logged in'
                 return
 def Logout():
     Respond('QUIT')
     code = Receive()
-    if code == response.replyCodes['Closed']:
+    if code == replyCodes['Closed']:
         print 'Me: Successfully Logged Off'
         c_socket.close()
         print 'Me: The connection was closed'
 
+def NoOp():
+    Respond('NOOP')
+    code = Receive()
+    if code != replyCodes['Service_OK']:
+        print 'Error: service is down'
 # replyCodes = {
 #     'Service_OK': 220,
 #     'Closed': 221,
@@ -67,8 +80,11 @@ def Logout():
 msg = str()
 cmd = str()
 Login()
-while cmd.upper() != 'QUIT':
-    cmd = raw_input("Me: Input command: ")
-    Respond(cmd)
-    msg = Receive()
+NoOp()
+# while cmd.upper() != 'QUIT':
+#     cmd = raw_input("Me: Input command: ")
+#     Respond(cmd)
+#     msg = Receive()
+    # if msg != replyCodes['Service_OK']:
+    #     print 'Wrong reply'
 Logout()
