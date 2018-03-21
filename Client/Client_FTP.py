@@ -8,14 +8,13 @@ for line in responsesFile:
     replyCodes[msg] = str(code)
 responsesFile.close()
 
-account = str()
-
 # For Local Server
 
 s_name = 'localhost'
 s_port = 2400
 username = 'Benjy'
 password = 'Hello'
+account = str()
 # ------------------------------------------
 
 # For Wits Server
@@ -50,9 +49,12 @@ def Receive(bufferSize=2048):
     # if code == "QUIT":
     #     commandList[cmd](args)
     #     return
+    # if code == replyCodes['Syntax_Error']:
+    #     print 'Syntax Error'
+    #     return '-1'
     return str(code)
 
-def Respond(code):
+def Send(code):
     code = code + CRLF
     c_socket.send(code)
 
@@ -66,14 +68,14 @@ def StartUp(site, port):
         Login()
 
 def Login():
-    Respond('USER ' + username)
+    Send('USER ' + username)
     code = Receive()
     if code == replyCodes['Logged_In']:
         return
     codeCommands[code]()
 
 def EnterPassword():
-    Respond('PASS ' + password)
+    Send('PASS ' + password)
     code = Receive()
     print 'Me: Sent password'
     if code == replyCodes['Logged_In']:
@@ -84,9 +86,9 @@ def EnterPassword():
         codeCommands[code]()
 
 def EnterAccount():
-    Respond('ACCT ' + account)
+    Send('ACCT ' + account)
     code = Receive()
-    print 'Me: Sent password'
+    print 'Me: Sent account'
     if code == replyCodes['Logged_In']:
         print 'Me: Logged in'
         return
@@ -95,8 +97,11 @@ def EnterAccount():
 def LoginFail():
     print 'Failed to login'
 
+def ChangeDirectory(path):
+    Send('CWD ' + path)
+
 def Logout():
-    Respond('QUIT')
+    Send('QUIT')
     code = Receive()
     if code == replyCodes['Closed']:
         print 'Me: Successfully Logged Off'
@@ -106,7 +111,7 @@ def Logout():
         codeCommands[code]()
 
 def NoOp():
-    Respond('NOOP')
+    Send('NOOP')
     code = Receive()
     print 'Me: No-op successful'
     if code != replyCodes['Command_OK']:
@@ -146,7 +151,7 @@ StartUp(s_name, s_port)
 NoOp()
 # while cmd.upper() != 'QUIT':
 #     cmd = raw_input("Me: Input command: ")
-#     Respond(cmd)
+#     Send(cmd)
 #     msg = Receive()
     # if msg != replyCodes['Service_OK']:
     #     print 'Wrong reply'

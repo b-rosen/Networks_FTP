@@ -1,5 +1,6 @@
 import threading
 import Users
+import atexit
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -28,6 +29,8 @@ CRLF = '\r\n'
 class UserThread (threading.Thread):
     msg = str()
     username = str()
+    loggedIn = False
+    running = True
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -36,7 +39,7 @@ class UserThread (threading.Thread):
         self.conn_socket = conn_socket
         self.address = address
 
-        self.Respond('Service_OK')
+        self.Send('Service_OK')
     # def __init__(self):
     #     self.name = "hello"
     def run(self):
@@ -47,8 +50,11 @@ class UserThread (threading.Thread):
             # self.conn_socket.send(self.msg)
         self.ExecuteCommand(self.msg)
 
-    def Respond(self, code):
-        code = replyCodes[code] + '\r\n'
+    def Send(self, code, message=str()):
+        if message != str():
+            code = replyCodes[code] + ' ' + message + CRLF
+        else:
+            code = replyCodes[code] + CRLF
         self.conn_socket.send(code)
 
     def Receive(self, bufferSize=2048):
@@ -60,24 +66,75 @@ class UserThread (threading.Thread):
         return cmd, args
 
     def Login(self, args):
-        # TODO: Sends back ok message, waits for password
+        if self.loggedIn:
+            self.Send('Logged_In')
+            return
+
         self.username = args[0]
-        # TODO: check if username exists
-        self.Respond('Need_Password')
+        try:
+            currentUser = Users.users[self.username]
+        except KeyError:
+            self.Send('Not_Logged_In', 'Incorrect')
+            return
+
+        if currentUser.password != Users.defaultPassword:
+            self.EnterPassword(currentUser)
+        elif currentUser.account != Users.defaultAccount:
+            self.EnterAccount(currentUser)
+        else:
+            self.Send('Logged_In')
+
+    def EnterPassword(self, currentUser):
+        if self.loggedIn:
+            self.Send('Logged_In')
+            return
+        elif type(currentUser) is not Users.UserInfo:
+            self.Send('Not_Logged_In')
+            return
+
+        self.Send('Need_Password')
         cmd, args = self.Receive()
-        if cmd == "PASS":
-            if args[0] == Users.users[self.username]:
-                self.Respond('Logged_In')
-                self.run()
+        password = args[0]
+        if cmd == 'PASS':
+            if password == currentUser.password:
+                if currentUser.account == Users.defaultAccount:
+                    self.Send('Logged_In')
+                    self.loggedIn = True
+                else:
+                    self.EnterAccount(currentUser)
+            else:
+                self.Send('Not_Logged_In')
+        else:
+            self.Send('Bad_Sequence')
+
+    def EnterAccount(self, currentUser):
+        if self.loggedIn:
+            self.Send('Logged_In')
+            return
+        elif type(currentUser) is not Users.UserInfo:
+            self.Send('Not_Logged_In')
+            return
+
+        self.Send('Need_Account')
+        cmd, args = self.Receive()
+        account = args[0]
+        if cmd == 'ACCT':
+            if account == currentUser.account:
+                self.Send('Logged_In')
+                self.loggedIn = True
+            else:
+                self.Send('Not_Logged_In')
+        else:
+            self.Send('Bad_Sequence')
 
     def Logout(self, args):
-        self.Respond('Closed')
+        self.Send('Closed')
         self.conn_socket.close()
         print ('\n' + self.name +  ' has been closed')
+        self.running = False
 
     def NoOp(self, args):
-        self.Respond('Command_OK')
-        self.run()
+        self.Send('Command_OK')
 
     def ParseCommand(self, msg):
         # TODO: parse cmd (strip out key stuff)
@@ -89,6 +146,8 @@ class UserThread (threading.Thread):
 
     commands = {
         'USER': Login,
+        'PASS': EnterPassword,
+        'ACCT': EnterAccount,
         'QUIT': Logout,
         'NOOP': NoOp
     }
@@ -99,7 +158,9 @@ class UserThread (threading.Thread):
         try:
             self.commands[cmd](self, msg)
         except KeyError:
-            print 'Wrong Command Entered'
+            self.Send('Syntax_Error')
+
+        if self.running:
             self.run()
         # except TypeError:
         #     print 'Too Many Arguments'

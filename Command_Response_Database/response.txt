@@ -8,5 +8,6 @@ Need_Account 332
 Service_Down 421
 Syntax_Error 500
 Argument_Error 501
+Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Logged_In 530
