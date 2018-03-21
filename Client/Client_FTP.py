@@ -35,9 +35,6 @@ account = str()
 
 CRLF = '\r\n'
 
-def test():
-    print(s_name)
-
 def ParseReply(msg):
     code = msg.split('\r\n', 1)
     if(msg != ''):
@@ -64,18 +61,24 @@ def Send(code):
 def StartUp(site, port):
     global c_socket
     c_socket = socket(AF_INET, SOCK_STREAM)
-    c_socket.connect((site, port))
+    try:
+        c_socket.connect((site, port))
+    except Exception, msg:
+        print(msg)
+        return False
+    
     code = Receive()
     if code == replyCodes['Service_OK']:
         print 'Me: Service ok'
-        Login()
+        return True
+    return False
 
 def Login():
     Send('USER ' + username)
     code = Receive()
     if code == replyCodes['Logged_In']:
-        return
-    codeCommands[code]()
+        return True
+    return codeCommands[code]()
 
 def EnterPassword():
     Send('PASS ' + password)
@@ -83,10 +86,12 @@ def EnterPassword():
     print 'Me: Sent password'
     if code == replyCodes['Logged_In']:
         print 'Me: Logged in'
+        return True
     elif code == replyCodes['Command_Unnecessary']:
         print 'Superfluous code'
+        return True
     else:
-        codeCommands[code]()
+        return codeCommands[code]()
 
 def EnterAccount():
     Send('ACCT ' + account)
@@ -94,11 +99,12 @@ def EnterAccount():
     print 'Me: Sent account'
     if code == replyCodes['Logged_In']:
         print 'Me: Logged in'
-        return
-    codeCommands[code]()
+        return True
+    return codeCommands[code]()
 
 def LoginFail():
     print 'Failed to login'
+    return False
 
 def ChangeDirectory(path):
     Send('CWD ' + path)
@@ -151,6 +157,7 @@ codeCommands = {
 msg = str()
 cmd = str()
 StartUp(s_name, s_port)
+Login()
 NoOp()
 # while cmd.upper() != 'QUIT':
 #     cmd = raw_input("Me: Input command: ")

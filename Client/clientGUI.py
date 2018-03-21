@@ -1,4 +1,5 @@
 from Tkinter import *
+import tkMessageBox
 import Client_FTP
 
 class clientGUI(Tk):
@@ -40,9 +41,11 @@ class serverSelectPage(Frame):
         
         def serverInput():
             Client_FTP.s_name = serverName.get()
-            print(serverName.get())
-            Client_FTP.test()
-            gui.display(guestOrUserPage)
+            if Client_FTP.StartUp(Client_FTP.s_name,Client_FTP.s_port):
+                gui.display(guestOrUserPage)
+                return
+            tkMessageBox.showerror("Error","Cannot connect to server")
+            
         connectButton = Button(self, text="connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=serverInput)
         connectButton.place(x=320,y=210,anchor=CENTER)
         
@@ -80,16 +83,32 @@ class logInPage(Frame):
         passwordLabel = Label(self, text="Password:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
         passwordLabel.place(x=320,y=165,anchor=CENTER)
         
-        password = Entry(self, width=30,fg="#4d12b5")
-        password.place(x=320,y=185,anchor=CENTER)
+        passwordEntry = Entry(self, width=30,fg="#4d12b5")
+        passwordEntry.place(x=320,y=185,anchor=CENTER)
         
-        logInButton = Button(self, text="Log In",background="#12d168",fg="#4d12b5",font=("Times New Roman",12),command=lambda: gui.display(mainPage))
+        def logIn():
+            Client_FTP.username = userName.get()
+            Client_FTP.password = passwordEntry.get()
+            if Client_FTP.Login():
+                gui.display(mainPage)
+                return
+            tkMessageBox.showerror("Error","Log in failed")
+            
+        
+        logInButton = Button(self, text="Log In",background="#12d168",fg="#4d12b5",font=("Times New Roman",12),command=logIn)
         logInButton.place(x=320,y=225,anchor=CENTER)
         
 class mainPage(Frame):
     def __init__(self,parent,gui):
         Frame.__init__(self,parent)
         self.configure(background="#12d168")
+                
+        def logOutGUI():
+            Client_FTP.Logout()
+            gui.display(serverSelectPage)
+            
+        logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",height=1,width=7,command=logOutGUI)
+        logOutButton.place(x=20,y=20,anchor=CENTER)
         
         openFileButton = Button(self,text="open",background="#12d168",fg="#4d12b5",height=1,width=7)
         openFileButton.place(x=260,y=85,anchor=CENTER)
