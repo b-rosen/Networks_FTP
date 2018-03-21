@@ -1,6 +1,7 @@
 import threading
 import Users
 import atexit
+import os
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -11,6 +12,8 @@ for line in responsesFile:
 responsesFile.close()
 
 CRLF = '\r\n'
+
+DefaultPath = './User_Folders'
 
 # commandFile = open('../Command_Response_Database/command.txt', 'r')
 # commands = {}
@@ -31,6 +34,8 @@ class UserThread (threading.Thread):
     username = str()
     loggedIn = False
     running = True
+    baseDirectory = DefaultPath
+    currentDirectory = str()
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -83,6 +88,8 @@ class UserThread (threading.Thread):
             self.EnterAccount(currentUser)
         else:
             self.Send('Logged_In')
+            self.loggedIn = True
+            self.baseDirectory += self.username + '/'
 
     def EnterPassword(self, currentUser):
         if self.loggedIn:
@@ -100,6 +107,7 @@ class UserThread (threading.Thread):
                 if currentUser.account == Users.defaultAccount:
                     self.Send('Logged_In')
                     self.loggedIn = True
+                    self.baseDirectory += self.username + '/'
                 else:
                     self.EnterAccount(currentUser)
             else:
@@ -122,6 +130,7 @@ class UserThread (threading.Thread):
             if account == currentUser.account:
                 self.Send('Logged_In')
                 self.loggedIn = True
+                self.baseDirectory += self.username + '/'
             else:
                 self.Send('Not_Logged_In')
         else:
@@ -136,6 +145,32 @@ class UserThread (threading.Thread):
     def NoOp(self, args):
         self.Send('Command_OK')
 
+    def ChangeDirectory(self, args):
+        path = args[0]
+        path = path
+
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+        elif os.path.exists(self.baseDirectory + path) == False:
+            # Send 550 response (file not found)
+            return
+
+        if path[-1] != '/':
+            path += '/'
+        self.currentDirectory = path
+        # Send successful command
+
+    def ChangeUp(self,args):
+        testPath = "/".join(self.currentDirectory.split("/")[:-1])
+        if os.path.exists(self.baseDirectory + testPath):
+            self.currentDirectory = testPath
+            # Send Successful command
+        else:
+            # Send 550 response
+            # Remove
+            return
+
     def ParseCommand(self, msg):
         # TODO: parse cmd (strip out key stuff)
         # Removes the CRLF command terminator
@@ -148,6 +183,8 @@ class UserThread (threading.Thread):
         'USER': Login,
         'PASS': EnterPassword,
         'ACCT': EnterAccount,
+        'CWD': ChangeDirectory,
+        'CDUP': ChangeUp,
         'QUIT': Logout,
         'NOOP': NoOp
     }
