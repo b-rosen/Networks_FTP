@@ -1,4 +1,5 @@
 from Tkinter import *
+import Client_FTP
 
 class clientGUI(Tk):
     def __init__(self,*args,**kwargs):
@@ -37,7 +38,12 @@ class serverSelectPage(Frame):
         serverName = Entry(self, width=30,fg="#4d12b5")
         serverName.place(x=320,y=170,anchor=CENTER)
         
-        connectButton = Button(self, text="connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=lambda: gui.display(guestOrUserPage))
+        def serverInput():
+            Client_FTP.s_name = serverName.get()
+            print(serverName.get())
+            Client_FTP.test()
+            gui.display(guestOrUserPage)
+        connectButton = Button(self, text="connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=serverInput)
         connectButton.place(x=320,y=210,anchor=CENTER)
         
 class guestOrUserPage(Frame):
