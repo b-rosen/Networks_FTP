@@ -35,6 +35,9 @@ account = str()
 
 CRLF = '\r\n'
 
+def test():
+    print(s_name)
+
 def ParseReply(msg):
     code = msg.split('\r\n', 1)
     if(msg != ''):
