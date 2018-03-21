@@ -146,16 +146,19 @@ def CloseConnection():
     c_socket.close()
 
 def BadSyntax():
-    print 'Syntax is incorrect'
+    print 'Error: Syntax is incorrect'
 
 def BadArgument():
-    print 'Argument(s) are incorrect'
+    print 'Error: Argument(s) are incorrect'
+
+def NoCommand():
+    print 'Error: Command not implemented'
 
 def BadCommandOrder():
-    print 'Order of commands was incorrect'
+    print 'Error: Order of commands was incorrect'
 
 def FileActionFailed():
-    print 'File action was not completed'
+    print 'Error: File action was not completed'
 
 codeCommands = {
     '331': EnterPassword,
@@ -163,6 +166,7 @@ codeCommands = {
     '421': CloseConnection,
     '500': BadSyntax,
     '501': BadArgument,
+    '502': NoCommand,
     '503': BadCommandOrder,
     '530': LoginFail,
     '550': FileActionFailed

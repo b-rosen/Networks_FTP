@@ -13,6 +13,7 @@ responsesFile.close()
 CRLF = '\r\n'
 
 DefaultPath = './User_Folders'
+DefaultDataPort = 20
 
 # commandFile = open('../Command_Response_Database/command.txt', 'r')
 # commands = {}
@@ -35,6 +36,8 @@ class UserThread (threading.Thread):
     running = True
     baseDirectory = DefaultPath
     currentDirectory = str()
+    dataHost = str()
+    dataPort = DefaultDataPort
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -42,6 +45,7 @@ class UserThread (threading.Thread):
         self.name = threadName
         self.conn_socket = conn_socket
         self.address = address
+        self.dataHost = address[0]
 
         self.Send('Service_OK')
     # def __init__(self):
@@ -140,6 +144,23 @@ class UserThread (threading.Thread):
         self.conn_socket.close()
         print ('\n' + self.name +  ' has been closed')
         self.running = False
+# TODO: add defaults as necessary
+    def Reinitialise(self, args):
+        # Reset all user variables to default
+        self.loggedIn = False
+        self.username = str()
+        self.baseDirectory = DefaultPath
+        self.currentDirectory = str()
+
+    def DataPortChange(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        hostPort = args[0].split(',')
+        self.dataHost = '.'.join(hostPort[0:4])
+        self.dataPort = int(hostPort[4]) * 256 + int(hostPort[5])
+
 
     def NoOp(self, args):
         self.Send('Command_OK')
@@ -153,12 +174,14 @@ class UserThread (threading.Thread):
             return
         elif os.path.exists(self.baseDirectory + path) == False:
             # Send 550 response (file not found)
+            self.Send('Action_Not_Taken')
             return
 
         if path[-1] != '/':
             path += '/'
         self.currentDirectory = path
         # Send successful command
+        self.Send(File_Action_Completed)
 
     def ChangeUp(self,args):
         testPath = "/".join(self.currentDirectory.split("/")[:-1])
@@ -168,12 +191,15 @@ class UserThread (threading.Thread):
         else:
             self.Send('Action_Not_Taken')
 
+    def NotImplemented(self, args):
+        self.Send('Command_Not_Implemented')
+
     def ParseCommand(self, msg):
         # TODO: parse cmd (strip out key stuff)
         # TODO: keep receiving until CRLF char is found
         # Removes the CRLF command terminator
         message = msg.split('\r\n', 1)
-        message = message[0].split(" ", 1)
+        message = message[0].split(" ")
         command = str.upper(message.pop(0))
         return (command, message)
 
@@ -184,6 +210,8 @@ class UserThread (threading.Thread):
         'CWD': ChangeDirectory,
         'CDUP': ChangeUp,
         'QUIT': Logout,
+        'REIN': Reinitialise,
+        'PORT': DataPortChange,
         'NOOP': NoOp
     }
 
@@ -194,6 +222,9 @@ class UserThread (threading.Thread):
             self.commands[cmd](self, msg)
         except KeyError:
             self.Send('Syntax_Error')
+        except TypeError:
+            print 'Error calling command'
+            self.Send('Argument_Error')
 
         if self.running:
             self.run()
