@@ -1,6 +1,5 @@
 import threading
 import Users
-import atexit
 import os
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
@@ -165,14 +164,13 @@ class UserThread (threading.Thread):
         testPath = "/".join(self.currentDirectory.split("/")[:-1])
         if os.path.exists(self.baseDirectory + testPath):
             self.currentDirectory = testPath
-            # Send Successful command
+            self.Send('File_Action_Completed')
         else:
-            # Send 550 response
-            # Remove
-            return
+            self.Send('Action_Not_Taken')
 
     def ParseCommand(self, msg):
         # TODO: parse cmd (strip out key stuff)
+        # TODO: keep receiving until CRLF char is found
         # Removes the CRLF command terminator
         message = msg.split('\r\n', 1)
         message = message[0].split(" ", 1)

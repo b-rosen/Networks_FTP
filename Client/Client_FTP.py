@@ -1,4 +1,5 @@
 from socket import *
+import atexit
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -66,7 +67,7 @@ def StartUp(site, port):
     except Exception, msg:
         print(msg)
         return False
-    
+
     code = Receive()
     if code == replyCodes['Service_OK']:
         print 'Me: Service ok'
@@ -108,7 +109,21 @@ def LoginFail():
 
 def ChangeDirectory(path):
     Send('CWD ' + path)
+    code = Receive()
+    if code == replyCodes['File_Action_Completed']:
+        print 'Me: Directory changed'
+    else:
+        codeCommands[code]()
 
+def ChangeUp():
+    Send('CDUP')
+    code = Receive()
+    if code == replyCodes['File_Action_Completed']:
+        print 'Me: Changed to parent directory'
+    else:
+        codeCommands[code]()
+
+@atexit.register
 def Logout():
     Send('QUIT')
     code = Receive()
@@ -122,9 +137,10 @@ def Logout():
 def NoOp():
     Send('NOOP')
     code = Receive()
-    print 'Me: No-op successful'
     if code != replyCodes['Command_OK']:
         print 'Error: service is down'
+    else:
+        print 'Me: No-op successful'
 
 def CloseConnection():
     c_socket.close()
@@ -138,6 +154,9 @@ def BadArgument():
 def BadCommandOrder():
     print 'Order of commands was incorrect'
 
+def FileActionFailed():
+    print 'File action was not completed'
+
 codeCommands = {
     '331': EnterPassword,
     '332': EnterAccount,
@@ -145,7 +164,8 @@ codeCommands = {
     '500': BadSyntax,
     '501': BadArgument,
     '503': BadCommandOrder,
-    '530': LoginFail
+    '530': LoginFail,
+    '550': FileActionFailed
 }
 # replyCodes = {
 #     'Service_OK': 220,
@@ -154,15 +174,15 @@ codeCommands = {
 #     'Logged_In': 230
 # }
 
-msg = str()
-cmd = str()
-StartUp(s_name, s_port)
-Login()
-NoOp()
-# while cmd.upper() != 'QUIT':
-#     cmd = raw_input("Me: Input command: ")
-#     Send(cmd)
-#     msg = Receive()
-    # if msg != replyCodes['Service_OK']:
-    #     print 'Wrong reply'
-Logout()
+# msg = str()
+# cmd = str()
+# StartUp(s_name, s_port)
+# Login()
+# NoOp()
+# # while cmd.upper() != 'QUIT':
+# #     cmd = raw_input("Me: Input command: ")
+# #     Send(cmd)
+# #     msg = Receive()
+#     # if msg != replyCodes['Service_OK']:
+#     #     print 'Wrong reply'
+# Logout()

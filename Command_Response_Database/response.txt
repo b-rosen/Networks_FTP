@@ -3,6 +3,7 @@ Command_Unnecessary 202
 Service_OK 220
 Closed 221
 Logged_In 230
+File_Action_Completed 250
 Need_Password 331
 Need_Account 332
 Service_Down 421
@@ -11,3 +12,4 @@ Argument_Error 501
 Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Logged_In 530
+Action_Not_Taken 550
