@@ -34,20 +34,28 @@ class serverSelectPage(Frame):
         self.configure(background="#12d168")
                        
         serverLabel = Label(self, text="Server Name:",font=("Times New Roman",12),background="#12d168",fg="#4d12b5")
-        serverLabel.place(x=320,y=150,anchor=CENTER)
+        serverLabel.place(x=320,y=115,anchor=CENTER)
         
         serverName = Entry(self, width=30,fg="#4d12b5")
-        serverName.place(x=320,y=170,anchor=CENTER)
+        serverName.place(x=320,y=135,anchor=CENTER)
+        
+        portLabel = Label(self, text="Port Name:",font=("Times New Roman",12),background="#12d168",fg="#4d12b5")
+        portLabel.place(x=320,y=165,anchor=CENTER)
+        
+        portName = Entry(self, width=30,fg="#4d12b5")
+        portName.place(x=320,y=185,anchor=CENTER)
         
         def serverInput():
             Client_FTP.s_name = serverName.get()
-            if Client_FTP.StartUp(Client_FTP.s_name,Client_FTP.s_port):
+            Client_FTP.s_port = int(portName.get())
+            result, message = Client_FTP.StartUp(Client_FTP.s_name,Client_FTP.s_port)
+            if result:
                 gui.display(guestOrUserPage)
                 return
-            tkMessageBox.showerror("Error","Cannot connect to server")
+            tkMessageBox.showerror("Error",message)
             
         connectButton = Button(self, text="connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=serverInput)
-        connectButton.place(x=320,y=210,anchor=CENTER)
+        connectButton.place(x=320,y=225,anchor=CENTER)
         
 class guestOrUserPage(Frame):
     def __init__(self,parent,gui):
@@ -64,8 +72,11 @@ class guestOrUserPage(Frame):
         def getSelected():
             if selected.get() == 1:
                 gui.display(logInPage)
-            else:
+            elif selected.get() == 2:
                 gui.display(mainPage)
+            else:
+                tkMessageBox.showerror("Error","Nothing selected")
+                
         continueButton = Button(self, text="Continue",background="#12d168",fg="#4d12b5",font=("Times New Roman",12),command=getSelected)
         continueButton.place(x=320,y=220,anchor=CENTER)
         
@@ -75,28 +86,36 @@ class logInPage(Frame):
         self.configure(background="#12d168")
         
         userLabel = Label(self, text="User Name:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
-        userLabel.place(x=320,y=115,anchor=CENTER)
+        userLabel.place(x=320,y=80,anchor=CENTER)
         
         userName = Entry(self, width=30,fg="#4d12b5")
-        userName.place(x=320,y=135,anchor=CENTER)
+        userName.place(x=320,y=100,anchor=CENTER)
         
         passwordLabel = Label(self, text="Password:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
-        passwordLabel.place(x=320,y=165,anchor=CENTER)
+        passwordLabel.place(x=320,y=130,anchor=CENTER)
         
         passwordEntry = Entry(self, width=30,fg="#4d12b5")
-        passwordEntry.place(x=320,y=185,anchor=CENTER)
+        passwordEntry.place(x=320,y=150,anchor=CENTER)
+        
+        accountLabel = Label(self, text="Account:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
+        accountLabel.place(x=320,y=180,anchor=CENTER)
+        
+        accountEntry = Entry(self, width=30,fg="#4d12b5")
+        accountEntry.place(x=320,y=200,anchor=CENTER)
         
         def logIn():
             Client_FTP.username = userName.get()
             Client_FTP.password = passwordEntry.get()
-            if Client_FTP.Login():
+            Client_FTP.account = accountEntry.get()
+            result, message = Client_FTP.Login()
+            if result:
                 gui.display(mainPage)
                 return
-            tkMessageBox.showerror("Error","Log in failed")
+            tkMessageBox.showerror("Error",message)
             
         
         logInButton = Button(self, text="Log In",background="#12d168",fg="#4d12b5",font=("Times New Roman",12),command=logIn)
-        logInButton.place(x=320,y=225,anchor=CENTER)
+        logInButton.place(x=320,y=240,anchor=CENTER)
         
 class mainPage(Frame):
     def __init__(self,parent,gui):
@@ -104,8 +123,11 @@ class mainPage(Frame):
         self.configure(background="#12d168")
                 
         def logOutGUI():
-            Client_FTP.Logout()
-            gui.display(serverSelectPage)
+            result, message = Client_FTP.Logout()
+            if result:
+                gui.display(serverSelectPage)
+                return
+            tkMessageBox.showerror("Error",message)
             
         logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",height=1,width=7,command=logOutGUI)
         logOutButton.place(x=20,y=20,anchor=CENTER)

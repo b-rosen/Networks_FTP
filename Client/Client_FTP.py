@@ -66,52 +66,59 @@ def StartUp(site, port):
         c_socket.connect((site, port))
     except Exception, msg:
         print(msg)
-        return False
+        return (False, "Could not find server")
 
     code = Receive()
     if code == replyCodes['Service_OK']:
-        print 'Me: Service ok'
-        return True
-    return False
+        msg =  'Service ok'
+        print msg
+        return (True,msg)
+    return codeCommands[code]()
 
 def Login():
     Send('USER ' + username)
     code = Receive()
     if code == replyCodes['Logged_In']:
-        return True
+        return (True, "Logged in")
     return codeCommands[code]()
 
 def EnterPassword():
     Send('PASS ' + password)
     code = Receive()
-    print 'Me: Sent password'
+    print 'Sent password'
     if code == replyCodes['Logged_In']:
-        print 'Me: Logged in'
-        return True
+        msg = 'Logged in'
+        print msg
+        return (True, msg)
     elif code == replyCodes['Command_Unnecessary']:
-        print 'Superfluous code'
-        return True
+        msg = 'Superfluous code'
+        print msg
+        return (True, msg)
     else:
         return codeCommands[code]()
 
 def EnterAccount():
     Send('ACCT ' + account)
     code = Receive()
-    print 'Me: Sent account'
+    print 'Sent account'
     if code == replyCodes['Logged_In']:
-        print 'Me: Logged in'
-        return True
+        msg = 'Logged in'
+        print msg
+        return (True, msg)
     return codeCommands[code]()
 
 def LoginFail():
-    print 'Failed to login'
-    return False
+    msg = 'Failed to login'
+    print msg
+    return (False, msg)
 
 def ChangeDirectory(path):
     Send('CWD ' + path)
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
-        print 'Me: Directory changed'
+        msg = 'Directory changed'
+        print msg
+        return (True,msg)
     else:
         codeCommands[code]()
 
@@ -119,7 +126,9 @@ def ChangeUp():
     Send('CDUP')
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
-        print 'Me: Changed to parent directory'
+        msg =  'Changed to parent directory'
+        print msg
+        return (True,msg)
     else:
         codeCommands[code]()
 
@@ -128,9 +137,11 @@ def Logout():
     Send('QUIT')
     code = Receive()
     if code == replyCodes['Closed']:
-        print 'Me: Successfully Logged Off'
+        print 'Successfully Logged Off'
         c_socket.close()
-        print 'Me: The connection was closed'
+        msg = 'The connection was closed'
+        print msg
+        return (True, msg)
     else:
         codeCommands[code]()
 
@@ -138,24 +149,36 @@ def NoOp():
     Send('NOOP')
     code = Receive()
     if code != replyCodes['Command_OK']:
-        print 'Error: service is down'
+        msg = 'service is down'
+        print msg
+        return (False, msg)
     else:
-        print 'Me: No-op successful'
+        msg = 'No-op successful'
+        print msg
+        return (True, msg)
 
 def CloseConnection():
     c_socket.close()
 
 def BadSyntax():
-    print 'Syntax is incorrect'
+    msg = 'Syntax is incorrect'
+    print msg
+    return (False,msg)
 
 def BadArgument():
-    print 'Argument(s) are incorrect'
+    msg = 'Argument(s) are incorrect'
+    print msg
+    return (False,msg)
 
 def BadCommandOrder():
-    print 'Order of commands was incorrect'
+    msg = 'Order of commands was incorrect'
+    print msg
+    return (False,msg)
 
 def FileActionFailed():
-    print 'File action was not completed'
+    msg = 'File action was not completed'
+    print msg
+    return (False,msg)
 
 codeCommands = {
     '331': EnterPassword,
