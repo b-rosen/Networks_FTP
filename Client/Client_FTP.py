@@ -180,12 +180,19 @@ def FileActionFailed():
     print msg
     return (False,msg)
 
+def NoCommand():
+    msg = 'Command not implemented'
+    print msg
+    return (False,msg)
+
+
 codeCommands = {
     '331': EnterPassword,
     '332': EnterAccount,
     '421': CloseConnection,
     '500': BadSyntax,
     '501': BadArgument,
+    '502': NoCommand,
     '503': BadCommandOrder,
     '530': LoginFail,
     '550': FileActionFailed
