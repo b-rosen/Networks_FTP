@@ -2,6 +2,7 @@ import threading
 import Users
 import os
 import random
+import DataConnection
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -146,6 +147,7 @@ class UserThread (threading.Thread):
         self.conn_socket.close()
         print ('\n' + self.name +  ' has been closed')
         self.running = False
+        self.loggedIn = False
 # TODO: add defaults as necessary
     def Reinitialise(self, args):
         # Reset all user variables to default
