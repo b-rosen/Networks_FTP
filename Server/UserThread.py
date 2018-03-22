@@ -1,6 +1,7 @@
 import threading
 import Users
 import os
+import random
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -38,6 +39,7 @@ class UserThread (threading.Thread):
     currentDirectory = str()
     dataHost = str()
     dataPort = DefaultDataPort
+    initiateDataConnection = True
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -160,7 +162,16 @@ class UserThread (threading.Thread):
         hostPort = args[0].split(',')
         self.dataHost = '.'.join(hostPort[0:4])
         self.dataPort = int(hostPort[4]) * 256 + int(hostPort[5])
+        self.Send('Command_OK')
 
+    def PassiveMode():
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        random.seed()
+        self.dataPort = random.randint(1024, 65534)
+        self.initiateDataConnection = False
 
     def NoOp(self, args):
         self.Send('Command_OK')
@@ -212,6 +223,7 @@ class UserThread (threading.Thread):
         'QUIT': Logout,
         'REIN': Reinitialise,
         'PORT': DataPortChange,
+        'PASV': PassiveMode,
         'NOOP': NoOp
     }
 

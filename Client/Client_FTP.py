@@ -1,5 +1,4 @@
 from socket import *
-import atexit
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -16,14 +15,16 @@ s_port = 2400
 username = 'Benjy'
 password = 'Hello'
 account = str()
+connected = False
+import atexit
 # ------------------------------------------
 
 # For Wits Server
 
-# s_name = 'ELEN4017.ug.eie.wits.ac.za'
-# s_port = 21
-# username = 'group8'
-# password = 'phuo4eeK'
+s_name = 'ELEN4017.ug.eie.wits.ac.za'
+s_port = 21
+username = 'group8'
+password = 'phuo4eeK'
 # ------------------------------------------
 
 # For Mirror (given in brief)
@@ -45,7 +46,7 @@ def ParseReply(msg):
 
 def Receive(bufferSize=2048):
     message = c_socket.recv(bufferSize)
-    # print message
+    print message
     code = ParseReply(message)
     # if code == "QUIT":
     #     commandList[cmd](args)
@@ -60,7 +61,7 @@ def Send(code):
     c_socket.send(code)
 
 def StartUp(site, port):
-    global c_socket
+    global c_socket, connected
     c_socket = socket(AF_INET, SOCK_STREAM)
     try:
         c_socket.connect((site, port))
@@ -70,8 +71,9 @@ def StartUp(site, port):
 
     code = Receive()
     if code == replyCodes['Service_OK']:
-        msg =  'Service ok'
+        msg = 'Service ok'
         print msg
+        connected = True
         return (True,msg)
     return codeCommands[code]()
 
@@ -132,18 +134,29 @@ def ChangeUp():
     else:
         codeCommands[code]()
 
+def ListFiles(directoryPath):
+    Send('NLST /')
+    code = Receive()
+
 @atexit.register
 def Logout():
-    Send('QUIT')
-    code = Receive()
-    if code == replyCodes['Closed']:
-        print 'Successfully Logged Off'
-        c_socket.close()
-        msg = 'The connection was closed'
-        print msg
-        return (True, msg)
+    global connected
+    if connected:
+        Send('QUIT')
+        code = Receive()
+        if code == replyCodes['Closed']:
+            print 'Successfully Logged Off'
+            c_socket.close()
+            msg = 'The connection was closed'
+            connected = False
+            print msg
+            return (True, msg)
+        else:
+            codeCommands[code]()
     else:
-        codeCommands[code]()
+        msg = "Not connected"
+        print msg
+        return (False, msg)
 
 def NoOp():
     Send('NOOP')
@@ -209,6 +222,7 @@ codeCommands = {
 # StartUp(s_name, s_port)
 # Login()
 # NoOp()
+# ListFiles('/')
 # # while cmd.upper() != 'QUIT':
 # #     cmd = raw_input("Me: Input command: ")
 # #     Send(cmd)
