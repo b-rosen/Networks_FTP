@@ -3,6 +3,8 @@ import Users
 import os
 import random
 import DataConnection
+from socket import gethostname, gethostbyname, timeout
+from subprocess import check_output
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -38,9 +40,6 @@ class UserThread (threading.Thread):
     running = True
     baseDirectory = DefaultPath
     currentDirectory = str()
-    dataHost = str()
-    dataPort = DefaultDataPort
-    initiateDataConnection = True
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -48,8 +47,7 @@ class UserThread (threading.Thread):
         self.name = threadName
         self.conn_socket = conn_socket
         self.address = address
-        self.dataHost = address[0]
-
+        self.loggedIn = True
         self.Send('Service_OK')
     # def __init__(self):
     #     self.name = "hello"
@@ -57,6 +55,7 @@ class UserThread (threading.Thread):
         # print self.name + " is ready to use"
         # while self.msg != 'exit':
         self.msg = self.conn_socket.recv(2048)
+            # TODO: add checks for other stuff
             # print 'The message (from ' + str(address) + ') is: ' + self.msg
             # self.conn_socket.send(self.msg)
         self.ExecuteCommand(self.msg)
@@ -71,9 +70,9 @@ class UserThread (threading.Thread):
     def Receive(self, bufferSize=2048):
         message = self.conn_socket.recv(bufferSize)
         cmd, args = self.ParseCommand(message)
-        if cmd == "QUIT":
-            commands[cmd](args)
-            return
+        # if cmd == "QUIT":
+        #     commands[cmd](args)
+        #     return
         return cmd, args
 
     def Login(self, args):
@@ -142,42 +141,6 @@ class UserThread (threading.Thread):
         else:
             self.Send('Bad_Sequence')
 
-    def Logout(self, args):
-        self.Send('Closed')
-        self.conn_socket.close()
-        print ('\n' + self.name +  ' has been closed')
-        self.running = False
-        self.loggedIn = False
-# TODO: add defaults as necessary
-    def Reinitialise(self, args):
-        # Reset all user variables to default
-        self.loggedIn = False
-        self.username = str()
-        self.baseDirectory = DefaultPath
-        self.currentDirectory = str()
-
-    def DataPortChange(self, args):
-        if self.loggedIn == False:
-            self.Send('Not_Logged_In')
-            return
-
-        hostPort = args[0].split(',')
-        self.dataHost = '.'.join(hostPort[0:4])
-        self.dataPort = int(hostPort[4]) * 256 + int(hostPort[5])
-        self.Send('Command_OK')
-
-    def PassiveMode():
-        if self.loggedIn == False:
-            self.Send('Not_Logged_In')
-            return
-
-        random.seed()
-        self.dataPort = random.randint(1024, 65534)
-        self.initiateDataConnection = False
-
-    def NoOp(self, args):
-        self.Send('Command_OK')
-
     def ChangeDirectory(self, args):
         path = args[0]
         path = path
@@ -204,6 +167,84 @@ class UserThread (threading.Thread):
         else:
             self.Send('Action_Not_Taken')
 
+    def Logout(self, args):
+        self.Send('Closed')
+        self.conn_socket.close()
+        print ('\n' + self.name +  ' has been closed')
+        self.running = False
+        self.loggedIn = False
+
+# TODO: add defaults as necessary
+    def Reinitialise(self, args):
+        # Reset all user variables to default
+        self.loggedIn = False
+        self.username = str()
+        self.baseDirectory = DefaultPath
+        self.currentDirectory = str()
+
+    def DataPortChange(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        hostPort = args[0].split(',')
+        DataConnection.address = '.'.join(hostPort[0:4])
+        DataConnection.port = int(hostPort[4]) * 256 + int(hostPort[5])
+        DataConnection.initiateConn = True
+        self.Send('Command_OK')
+
+    def PassiveMode(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+        random.seed()
+        DataConnection.port = random.randint(1024, 65534)
+        replyAddress = gethostbyname(gethostname()).replace('.', ',')
+        replyPort = ','.join((str(int(DataConnection.port) / 256), str(DataConnection.port % 256)))
+        reply = ','.join((replyAddress, replyPort))
+        DataConnection.initiateConn = False
+        self.Send('Passive_Mode', reply)
+
+    def ListDir(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        if DataConnection.connected:
+            self.Send('Data_Connection_Open')
+        else:
+            self.Send('File_Status_Ok')
+            DataConnection.Connect()
+
+        dirPath = str()
+        if args[0] == str():
+            dirPath = self.baseDirectory + self.currentDirectory
+        else:
+            dirPath = self.baseDirectory + args[0]
+        data = subprocess.check_output(['ls', '-l', dirPath])
+        data = data.split('\n')
+        data.pop(0)
+        data.pop(-1)
+        DataConnection.data = '\r\n'.join(data)
+        threading.Thread(None, DataConnection.SendData)
+
+        self.conn_socket.settimeout(0.5)
+        while DataConnection.active:
+            try:
+                message = self.conn_socket.recv(2048)
+            except timeout:
+                continue
+
+            cmd, args = self.ParseCommand(message)
+            if cmd == "QUIT" or cmd == 'ABOR' or cmd == 'STAT':
+                commands[cmd](args)
+                return
+        self.conn_socket.settimeout(None)
+
+
+    def NoOp(self, args):
+        self.Send('Command_OK')
+
     def NotImplemented(self, args):
         self.Send('Command_Not_Implemented')
 
@@ -226,6 +267,7 @@ class UserThread (threading.Thread):
         'REIN': Reinitialise,
         'PORT': DataPortChange,
         'PASV': PassiveMode,
+        'LIST': ListDir,
         'NOOP': NoOp
     }
 

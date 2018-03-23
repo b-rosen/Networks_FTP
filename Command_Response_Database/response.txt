@@ -21,5 +21,3 @@ Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Logged_In 530
 Action_Not_Taken 550
-
-
