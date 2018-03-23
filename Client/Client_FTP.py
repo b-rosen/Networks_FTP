@@ -198,11 +198,60 @@ def NoCommand():
     print msg
     return (False,msg)
 
+def DCOpen():
+    msg = "Transfer starting, please wait"
+    print msg
+    return (False,msg)
+
+def DCAboutToOpen():
+    msg = "About to open data connection, please wait"
+    print msg
+    return (False,msg)
+
+def ClosingDC():
+    msg = "Closing Data Connection"
+    print msg
+    return (True,msg)
+
+def FileActionOkay():
+    msg = "Action complete"
+    print msg
+    return (True,msg)
+
+def CantOpenDC():
+    msg = "Cannot open data connection"
+    print msg
+    return (False,msg)
+
+def ConnectionClosedAbort():
+    msg = "Connection closed, transfer aborted"
+    print msg
+    return (False,msg)
+
+def FileUnavailable():
+    msg = "The file is currently unavailable"
+    print msg
+    return (False,msg)
+
+def ActionAbortedLocal():
+    msg = "There was a local error while processing, action aborted"
+    print msg
+    return (False,msg)
+
+
 
 codeCommands = {
+    '125': DCOpen,
+    '150': DCAboutToOpen,
+    '226': ClosingDC,
+    '250': FileActionOkay,
     '331': EnterPassword,
     '332': EnterAccount,
     '421': CloseConnection,
+    '425': CantOpenDC,
+    '426': ConnectionClosedAbort,
+    '450': FileUnavailable,
+    '451': ActionAbortedLocal,
     '500': BadSyntax,
     '501': BadArgument,
     '502': NoCommand,
