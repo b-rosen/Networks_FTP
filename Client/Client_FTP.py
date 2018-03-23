@@ -137,7 +137,7 @@ def ChangeUp():
 def ListFilesRec():
     #code = Receive()
     code = '226'
-    listInfo = "test 4 test test 0 month year time Directory\ntest 1 test test 1234 month year time file"
+    listInfo = "test 4 test test 0 month year time Directory\r\ntest 1 test test 1234 month year time file"
     if (code == replyCodes['Data_Connection_Open']) or (code == replyCodes['File_Status_Ok']):
         return ListFilesRec()
     
@@ -146,9 +146,10 @@ def ListFilesRec():
         entryType = []
         entryName = []
         lines = listInfo.split("\r\n")
+        print lines
         for line in lines:
             values = line.split()
-            entryName.append(String(values[len(values)-1]))
+            entryName.append(values[len(values)-1])
             if int(values[1]) > 1:
                 entryType.append("Directory")
             else:
