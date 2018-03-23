@@ -56,6 +56,10 @@ class serverSelectPage(Frame):
 
         connectButton = Button(self, text="Connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=serverInput)
         connectButton.place(x=320,y=225,anchor=CENTER)
+        result,names,types = Client_FTP.ListFilesRec()
+        print result
+        print names
+        print types
 
 class guestOrUserPage(Frame):
     def __init__(self,parent,gui):

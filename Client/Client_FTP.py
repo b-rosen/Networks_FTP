@@ -122,7 +122,7 @@ def ChangeDirectory(path):
         print msg
         return (True,msg)
     else:
-        codeCommands[code]()
+        return codeCommands[code]()
 
 def ChangeUp():
     Send('CDUP')
@@ -132,11 +132,38 @@ def ChangeUp():
         print msg
         return (True,msg)
     else:
-        codeCommands[code]()
+        return codeCommands[code]()
 
+def ListFilesRec():
+    #code = Receive()
+    code = '226'
+    listInfo = "test 4 test test 0 month year time Directory\ntest 1 test test 1234 month year time file"
+    if (code == replyCodes['Data_Connection_Open']) or (code == replyCodes['File_Status_Ok']):
+        return ListFilesRec()
+    
+    result,message = codeCommands[code]()
+    if result:
+        entryType = []
+        entryName = []
+        lines = listInfo.split("\r\n")
+        for line in lines:
+            values = line.split()
+            entryName.append(String(values[len(values)-1]))
+            if int(values[1]) > 1:
+                entryType.append("Directory")
+            else:
+                entryType.append("File")
+        return (True,entryName,entryType)
+    else:
+        return (False,message,"")
+    
 def ListFiles(directoryPath):
-    Send('NLST /')
-    code = Receive()
+    if directoryPath == '':
+        Send('LIST')
+    else:
+        commandString = 'LIST ' + directoryPath
+        Send(commandString)
+    return ListFilesRec()
 
 @atexit.register
 def Logout():
