@@ -56,10 +56,6 @@ class serverSelectPage(Frame):
 
         connectButton = Button(self, text="Connect to server",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",command=serverInput)
         connectButton.place(x=320,y=225,anchor=CENTER)
-        result,names,types = Client_FTP.ListFilesRec()
-        print result
-        print names
-        print types
 
 class guestOrUserPage(Frame):
     def __init__(self,parent,gui):
@@ -144,9 +140,24 @@ class mainPage(Frame):
 
         downloadButton = Button(self,text="download",background="#12d168",fg="#4d12b5",height=1,width=7)
         downloadButton.place(x=380,y=85,anchor=CENTER)
-
+        
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
+        
+        def listItems():
+            result,names,types = Client_FTP.ListFilesRec()
+            if result:
+                counter = 0
+                for name in names:
+                    serverList.insert(END,name)
+                    if types[counter] == "Directory":
+                        serverList.itemconfig(counter,{'fg':'red'})
+                    counter += 1
+                return
+            tkMessageBox.showerror("Error",names)
+            
+        listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
+        listButton.place(x=300,y=20,anchor=CENTER)
 
 
 app = clientGUI()
