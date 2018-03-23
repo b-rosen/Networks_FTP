@@ -8,6 +8,7 @@ Closing_Data_Connection 226
 Passive_Mode 227
 Logged_In 230
 File_Action_Completed 250
+Pathname_Created 257
 Need_Password 331
 Need_Account 332
 Service_Down 421
