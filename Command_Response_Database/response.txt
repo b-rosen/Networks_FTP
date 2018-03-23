@@ -1,16 +1,25 @@
+Data_Connection_Open 125
+File_Status_Ok 150
 Command_OK 200
 Command_Unnecessary 202
 Service_OK 220
 Closed 221
+Closing_Data_Connection 226
 Passive_Mode 227
 Logged_In 230
 File_Action_Completed 250
 Need_Password 331
 Need_Account 332
 Service_Down 421
+Cant_Open_Data_Connection 425
+Connection_Closed 426
+File_Action_Not_Taken 450
+Action_Aborted_Local 451
 Syntax_Error 500
 Argument_Error 501
 Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Logged_In 530
 Action_Not_Taken 550
+
+
