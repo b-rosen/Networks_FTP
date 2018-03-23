@@ -2,6 +2,7 @@ Command_OK 200
 Command_Unnecessary 202
 Service_OK 220
 Closed 221
+Passive_Mode 227
 Logged_In 230
 File_Action_Completed 250
 Need_Password 331
