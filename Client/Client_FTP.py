@@ -1,4 +1,6 @@
 from socket import *
+import threading
+import DataConnection
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -16,15 +18,16 @@ username = 'Benjy'
 password = 'Hello'
 account = str()
 connected = False
+currentDirectory = str()
 import atexit
 # ------------------------------------------
 
 # For Wits Server
 
-s_name = 'ELEN4017.ug.eie.wits.ac.za'
-s_port = 21
-username = 'group8'
-password = 'phuo4eeK'
+# s_name = 'ELEN4017.ug.eie.wits.ac.za'
+# s_port = 21
+# username = 'group8'
+# password = 'phuo4eeK'
 # ------------------------------------------
 
 # For Mirror (given in brief)
@@ -38,22 +41,28 @@ password = 'phuo4eeK'
 CRLF = '\r\n'
 
 def ParseReply(msg):
-    code = msg.split('\r\n', 1)
+    reply = msg.split('\r\n', 1)
     if(msg != ''):
-        code = code[0].split('-')
-        code = int(code[0].split(" ", 1)[0])
-    return code
+        reply = reply[0].split('-')
+        reply = reply[0].split(" ", 1)
+        code = int(reply[0])
+        try:
+            message = reply[1]
+        except IndexError:
+            message = str()
+    return (code, message)
 
-def Receive(bufferSize=2048):
+def Receive(bufferSize=2048, getMessage=False):
     message = c_socket.recv(bufferSize)
-    print message
-    code = ParseReply(message)
+    code, msg = ParseReply(message)
     # if code == "QUIT":
     #     commandList[cmd](args)
     #     return
     # if code == replyCodes['Syntax_Error']:
     #     print 'Syntax Error'
     #     return '-1'
+    if getMessage:
+        return str(code), msg
     return str(code)
 
 def Send(code):
@@ -72,7 +81,6 @@ def StartUp(site, port):
     code = Receive()
     if code == replyCodes['Service_OK']:
         msg = 'Service ok'
-        print msg
         connected = True
         return (True,msg)
     return codeCommands[code]()
@@ -110,7 +118,7 @@ def EnterAccount():
     return codeCommands[code]()
 
 def LoginFail():
-    msg = 'Failed to login'
+    msg = 'Not logged in'
     print msg
     return (False, msg)
 
@@ -140,7 +148,7 @@ def ListFilesRec():
     listInfo = "test 4 test test 0 month year time Directory\r\ntest 1 test test 1234 month year time file"
     if (code == replyCodes['Data_Connection_Open']) or (code == replyCodes['File_Status_Ok']):
         return ListFilesRec()
-    
+
     result,message = codeCommands[code]()
     if result:
         entryType = []
@@ -157,14 +165,67 @@ def ListFilesRec():
         return (True,entryName,entryType)
     else:
         return (False,message,"")
-    
+
 def ListFiles(directoryPath):
     if directoryPath == '':
         Send('LIST')
     else:
         commandString = 'LIST ' + directoryPath
         Send(commandString)
+    code = Receive()
+    if code == replyCodes['Data_Connection_Open']:
+        print 'Data Connection Already open'
+    elif code == replyCodes['File_Status_Ok']:
+        DataConnection.Connect()
+        print 'Opening data connection'
+    else:
+        return codeCommands[code]()
+    data_thread = threading.Thread(None, DataConnection.GetData)
+    data_thread.start()
+    while True:
+        code = Receive()
+        if code == replyCodes['Closing_Data_Connection']:
+            DataConnection.Close()
+            msg = 'Transfer complete - Closing data connection'
+            print msg
+            return (True, msg)
+        elif code == replyCodes['File_Action_Completed']:
+            msg = 'Transfer complete'
+            print msg
+            return (True, msg)
+        elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
+            DataConnection.Close()
+            return codeCommands[code]()
     return ListFilesRec()
+
+def ChangePort(newPort):
+    DataConnection.port = int(newPort)
+    cmdAddress = gethostbyname(gethostname()).replace('.', ',')
+    cmdPort = ','.join((str(int(DataConnection.port) / 256), str(DataConnection.port % 256)))
+    cmd = ','.join((cmdAddress, cmdPort))
+    DataConnection.initiateConn = False
+    Send('PORT ' + cmd)
+    code = Receive()
+    if code == replyCodes['Command_OK']:
+        msg = 'Successfully changed port'
+        print msg
+        return (True, msg)
+    else:
+        return codeCommands[code]()
+
+def PassiveMode():
+    Send('PASV')
+    code, message = Receive(getMessage=True)
+    if code == replyCodes['Passive_Mode']:
+        hostPort = message.split(',')
+        DataConnection.address = '.'.join(hostPort[0:4])
+        DataConnection.port = int(hostPort[4]) * 256 + int(hostPort[5])
+        DataConnection.initiateConn = True
+        msg = 'Entered Passive Mode'
+        print msg
+        return (True, msg)
+    else:
+        return codeCommands[code]()
 
 @atexit.register
 def Logout():
@@ -180,11 +241,24 @@ def Logout():
             print msg
             return (True, msg)
         else:
-            codeCommands[code]()
+            return codeCommands[code]()
     else:
         msg = "Not connected"
         print msg
         return (False, msg)
+
+def GetCurrentDir():
+    Send('PWD')
+    code, message = Receive(getMessage=True)
+    if code == replyCodes['Pathname_Created']:
+        if message[0] == '\"':
+            message = message[1:]
+        if message[-1] == '\"':
+            message = message[:-1]
+        message = message.replace('\"\"', '\"')
+        return (True, message)
+    else:
+        return codeCommands[code]()
 
 def NoOp():
     Send('NOOP')
@@ -287,23 +361,14 @@ codeCommands = {
     '530': LoginFail,
     '550': FileActionFailed
 }
-# replyCodes = {
-#     'Service_OK': 220,
-#     'Closed': 221,
-#     'Need_Password': 331,
-#     'Logged_In': 230
-# }
 
-# msg = str()
-# cmd = str()
-# StartUp(s_name, s_port)
-# Login()
-# NoOp()
-# ListFiles('/')
-# # while cmd.upper() != 'QUIT':
-# #     cmd = raw_input("Me: Input command: ")
-# #     Send(cmd)
-# #     msg = Receive()
-#     # if msg != replyCodes['Service_OK']:
-#     #     print 'Wrong reply'
-# Logout()
+''' Testing Code '''
+StartUp(s_name, s_port)
+Login()
+PassiveMode()
+print GetCurrentDir()
+ChangeDirectory('/test/')
+print GetCurrentDir()
+ChangePort(10000)
+if ListFiles('/')[0]:
+    print DataConnection.data

@@ -16,7 +16,7 @@ responsesFile.close()
 
 CRLF = '\r\n'
 
-DefaultPath = './User_Folders'
+DefaultPath = './User_Folders/'
 DefaultDataPort = 20
 
 # commandFile = open('../Command_Response_Database/command.txt', 'r')
@@ -36,10 +36,7 @@ DefaultDataPort = 20
 class UserThread (threading.Thread):
     msg = str()
     username = str()
-    loggedIn = False
-    running = True
-    baseDirectory = DefaultPath
-    currentDirectory = str()
+    currentDirectory = '/'
 
     def __init__(self, threadName, threadID, conn_socket, address):
         threading.Thread.__init__(self)
@@ -47,7 +44,9 @@ class UserThread (threading.Thread):
         self.name = threadName
         self.conn_socket = conn_socket
         self.address = address
-        self.loggedIn = True
+        self.loggedIn = False
+        self.running = True
+        self.baseDirectory = DefaultPath
         self.Send('Service_OK')
     # def __init__(self):
     #     self.name = "hello"
@@ -94,7 +93,7 @@ class UserThread (threading.Thread):
         else:
             self.Send('Logged_In')
             self.loggedIn = True
-            self.baseDirectory += self.username + '/'
+            self.baseDirectory += self.username
 
     def EnterPassword(self, currentUser):
         if self.loggedIn:
@@ -112,7 +111,7 @@ class UserThread (threading.Thread):
                 if currentUser.account == Users.defaultAccount:
                     self.Send('Logged_In')
                     self.loggedIn = True
-                    self.baseDirectory += self.username + '/'
+                    self.baseDirectory += self.username
                 else:
                     self.EnterAccount(currentUser)
             else:
@@ -135,7 +134,7 @@ class UserThread (threading.Thread):
             if account == currentUser.account:
                 self.Send('Logged_In')
                 self.loggedIn = True
-                self.baseDirectory += self.username + '/'
+                self.baseDirectory += self.username
             else:
                 self.Send('Not_Logged_In')
         else:
@@ -157,7 +156,7 @@ class UserThread (threading.Thread):
             path += '/'
         self.currentDirectory = path
         # Send successful command
-        self.Send(File_Action_Completed)
+        self.Send('File_Action_Completed')
 
     def ChangeUp(self,args):
         testPath = "/".join(self.currentDirectory.split("/")[:-1])
@@ -197,6 +196,7 @@ class UserThread (threading.Thread):
         if self.loggedIn == False:
             self.Send('Not_Logged_In')
             return
+
         random.seed()
         DataConnection.port = random.randint(1024, 65534)
         replyAddress = gethostbyname(gethostname()).replace('.', ',')
@@ -214,19 +214,21 @@ class UserThread (threading.Thread):
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
-            DataConnection.Connect()
 
         dirPath = str()
         if args[0] == str():
             dirPath = self.baseDirectory + self.currentDirectory
         else:
             dirPath = self.baseDirectory + args[0]
-        data = subprocess.check_output(['ls', '-l', dirPath])
+        data = check_output(['ls', '-l', dirPath])
         data = data.split('\n')
         data.pop(0)
         data.pop(-1)
-        DataConnection.data = '\r\n'.join(data)
-        threading.Thread(None, DataConnection.SendData)
+        DataConnection.data = CRLF.join(data)
+        if DataConnection.connected == False:
+            DataConnection.Connect()
+        data_thread = threading.Thread(None, DataConnection.SendData)
+        data_thread.start()
 
         self.conn_socket.settimeout(0.5)
         while DataConnection.active:
@@ -240,7 +242,15 @@ class UserThread (threading.Thread):
                 commands[cmd](args)
                 return
         self.conn_socket.settimeout(None)
+        self.Send('Closing_Data_Connection')
+        DataConnection.Close()
 
+    def PrintCurrentDir(self, args):
+        if os.path.exists(self.baseDirectory + self.currentDirectory):
+            dir = self.currentDirectory.replace('\"', '\"\"')
+            self.Send('Pathname_Created', '\"' + dir + '\"')
+        else:
+            self.Send('Action_Not_Taken')
 
     def NoOp(self, args):
         self.Send('Command_OK')
@@ -268,6 +278,7 @@ class UserThread (threading.Thread):
         'PORT': DataPortChange,
         'PASV': PassiveMode,
         'LIST': ListDir,
+        'PWD': PrintCurrentDir,
         'NOOP': NoOp
     }
 
