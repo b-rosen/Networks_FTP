@@ -148,7 +148,6 @@ class mainPage(Frame):
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 result,msg,names,types = Client_FTP.ListFiles('')
-                print types
                 if result:
                     counter = 0
                     for name in names:

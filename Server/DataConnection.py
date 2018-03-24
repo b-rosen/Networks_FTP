@@ -18,6 +18,7 @@ port = int()
 def Close():
     global connection, active, connected
     while active:
+        print 'Waiting for transfer'
         continue
     connection.close()
     print 'DC: Connection Closed'
