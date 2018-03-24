@@ -145,7 +145,7 @@ class mainPage(Frame):
         serverList.place(x=320,y=180,anchor=CENTER)
         
         def listItems():
-            result,names,types = Client_FTP.ListFilesRec()
+            result,msg,names,types = Client_FTP.ListFiles('')
             if result:
                 counter = 0
                 for name in names:
@@ -154,7 +154,7 @@ class mainPage(Frame):
                         serverList.itemconfig(counter,{'fg':'red'})
                     counter += 1
                 return
-            tkMessageBox.showerror("Error",names)
+            tkMessageBox.showerror("Error",msg)
             
         listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
         listButton.place(x=196,y=111,anchor=CENTER)

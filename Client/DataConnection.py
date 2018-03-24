@@ -31,10 +31,12 @@ def GetData(buffer=2048):
     while msg != '':
         msg = connection.recv(buffer)
         dataList.append(msg)
-    data = str()
-    data = ''.join(dataList)
+    datastr = str()
+    datastr = ''.join(dataList)
+    data = datastr
     print 'DC: Data Received'
     active = False
+    
 
 def SendData():
     global active, connection, data

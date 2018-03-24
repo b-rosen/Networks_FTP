@@ -142,29 +142,20 @@ def ChangeUp():
     else:
         return codeCommands[code]()
 
-def ListFilesRec():
-    #code = Receive()
-    code = '226'
-    listInfo = "test 4 test test 0 month year time Directory\r\ntest 1 test test 1234 month year time file"
-    if (code == replyCodes['Data_Connection_Open']) or (code == replyCodes['File_Status_Ok']):
-        return ListFilesRec()
+def getList(listData):
+    #listData = "test 1 test test bits month date time fileName1\r\ntest 1 test test bits month date time fileName2\r\ntest 1 test test bits month date time fileName3\r\ntest 4 test test bits month date time directoryName1"
+    entryType = []
+    entryName = []
+    lines = listData.split('\r\n')
 
-    result,message = codeCommands[code]()
-    if result:
-        entryType = []
-        entryName = []
-        lines = listInfo.split("\r\n")
-        print lines
-        for line in lines:
-            values = line.split()
-            entryName.append(values[len(values)-1])
-            if int(values[1]) > 1:
-                entryType.append("Directory")
-            else:
-                entryType.append("File")
-        return (True,entryName,entryType)
-    else:
-        return (False,message,"")
+    for line in lines:
+        values = line.split()
+        entryName.append(values[len(values)-1])
+        if int(values[1]) > 1:
+            entryType.append("Directory")
+        else:
+            entryType.append("File")
+    return (entryName,entryType)
 
 def ListFiles(directoryPath):
     if directoryPath == '':
@@ -182,21 +173,23 @@ def ListFiles(directoryPath):
         return codeCommands[code]()
     data_thread = threading.Thread(None, DataConnection.GetData)
     data_thread.start()
+    
     while True:
         code = Receive()
         if code == replyCodes['Closing_Data_Connection']:
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
             print msg
-            return (True, msg)
+            entryNames,entryTypes = getList(DataConnection.data)
+            return (True, msg, entryNames,entryTypes)
         elif code == replyCodes['File_Action_Completed']:
             msg = 'Transfer complete'
             print msg
-            return (True, msg)
+            entryNames,entryTypes = getList(DataConnection.data)
+            return (True, msg,entryNames,entryTypes)
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
-    return ListFilesRec()
 
 def ChangePort(newPort):
     DataConnection.port = int(newPort)
@@ -370,5 +363,3 @@ print GetCurrentDir()
 ChangeDirectory('/test/')
 print GetCurrentDir()
 ChangePort(10000)
-if ListFiles('/')[0]:
-    print DataConnection.data
