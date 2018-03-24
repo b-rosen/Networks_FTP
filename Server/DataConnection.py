@@ -1,11 +1,11 @@
 import threading
 from socket import *
+from time import sleep
 
 data = str()
 active = False
 connected = False
 initiateConn = False
-command = str()
 bufferSize = 2048
 data_socket = None
 connection = None
@@ -16,7 +16,7 @@ port = int()
 
 
 def Close():
-    global connection, active
+    global connection, active, connected
     while active:
         continue
     connection.close()
@@ -37,7 +37,7 @@ def GetData(buffer=2048):
     data = datastr
     print 'DC: Data Received'
     active = False
-    
+
 def GetFile(buffer=2048):
     global action, connection, fileData
     print 'DC: Getting File'
@@ -52,7 +52,7 @@ def GetFile(buffer=2048):
     data = datastr
     print 'DC: file Received'
     active = False
-    
+
 def sendFile(buffer=2048):
     global active, connection, fileData
     active = True
@@ -70,15 +70,20 @@ def SendData():
     active = False
 
 def Connect():
-    global initiateConn, connection, address, port, data_socket
+    global initiateConn, connection, address, port, data_socket, connected
+    if connected:
+        print 'Already Connected'
+        return
+
     if initiateConn:
+        sleep(0.1)
         connection = socket(AF_INET, SOCK_STREAM)
         connection.connect((address, port))
-        print 'DC: Ready to send Data'
+        print 'DC: Initiated Connection'
     else:
         data_socket = socket(AF_INET, SOCK_STREAM)
         data_socket.bind(('', port))
         data_socket.listen(1)
-        print 'DC: Ready to receive Data'
+        print 'DC: Connected'
         connection, addr = data_socket.accept()
     connected = True

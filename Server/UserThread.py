@@ -216,7 +216,7 @@ class UserThread (threading.Thread):
             self.Send('File_Status_Ok')
 
         dirPath = str()
-        if args[0] == str():
+        if len(args) == 0:
             dirPath = self.baseDirectory + self.currentDirectory
         else:
             dirPath = self.baseDirectory + args[0]
@@ -226,8 +226,7 @@ class UserThread (threading.Thread):
         data.pop(0)
         data.pop(-1)
         DataConnection.data = CRLF.join(data)
-        if DataConnection.connected == False:
-            DataConnection.Connect()
+        DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()
 
@@ -245,7 +244,7 @@ class UserThread (threading.Thread):
         self.conn_socket.settimeout(None)
         self.Send('Closing_Data_Connection')
         DataConnection.Close()
-        
+
     def SendFile(self, args):
         if self.loggedIn == False:
             self.Send('Not_Logged_In')
@@ -257,7 +256,7 @@ class UserThread (threading.Thread):
             self.Send('File_Status_Ok')
 
         #put file on data connection
-        
+
         if DataConnection.connected == False:
             DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendFile)
@@ -277,7 +276,7 @@ class UserThread (threading.Thread):
         self.conn_socket.settimeout(None)
         self.Send('Closing_Data_Connection')
         DataConnection.Close()
-        
+
 
     def PrintCurrentDir(self, args):
         if os.path.exists(self.baseDirectory + self.currentDirectory):

@@ -155,6 +155,7 @@ def getList(listData):
             entryType.append("Directory")
         else:
             entryType.append("File")
+    print entryType
     return (entryName,entryType)
 
 def ListFiles(directoryPath):
@@ -173,7 +174,7 @@ def ListFiles(directoryPath):
         return codeCommands[code]()
     data_thread = threading.Thread(None, DataConnection.GetData)
     data_thread.start()
-    
+
     while True:
         code = Receive()
         if code == replyCodes['Closing_Data_Connection']:
@@ -232,7 +233,7 @@ def download(filePath):
         return codeCommands[code]()
     data_thread = threading.Thread(None, DataConnection.GetFile)
     data_thread.start()
-    
+
     while True:
         code = Receive()
         if code == replyCodes['Closing_Data_Connection']:
@@ -396,10 +397,12 @@ codeCommands = {
 }
 
 ''' Testing Code '''
-StartUp(s_name, s_port)
-Login()
-PassiveMode()
-print GetCurrentDir()
-ChangeDirectory('/test/')
-print GetCurrentDir()
-ChangePort(10000)
+# StartUp(s_name, s_port)
+# Login()
+# PassiveMode()
+# print GetCurrentDir()
+# ChangeDirectory('/test/')
+# print GetCurrentDir()
+# # ChangePort(10000)
+# if ListFiles('/'):
+#     print DataConnection.data
