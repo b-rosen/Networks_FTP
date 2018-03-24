@@ -220,6 +220,40 @@ def PassiveMode():
     else:
         return codeCommands[code]()
 
+def download(filePath):
+    Send('RETR '+ filePath)
+    code = Receive()
+    if code == replyCodes['Data_Connection_Open']:
+        print 'Data Connection Already open'
+    elif code == replyCodes['File_Status_Ok']:
+        DataConnection.Connect()
+        print 'Opening data connection'
+    else:
+        return codeCommands[code]()
+    data_thread = threading.Thread(None, DataConnection.GetFile)
+    data_thread.start()
+    
+    while True:
+        code = Receive()
+        if code == replyCodes['Closing_Data_Connection']:
+            DataConnection.Close()
+            msg = 'Transfer complete - Closing data connection'
+            print msg
+            rFile = DataConnection.fileData
+            print rFile
+            #Save file
+            return (True, msg)
+        elif code == replyCodes['File_Action_Completed']:
+            msg = 'Transfer complete'
+            print msg
+            rFile = DataConnection.fileData
+            print rFile
+            #Save file
+            return (True, msg,entryNames,entryTypes)
+        elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
+            DataConnection.Close()
+            return codeCommands[code]()
+
 @atexit.register
 def Logout():
     global connected
@@ -333,9 +367,15 @@ def ActionAbortedLocal():
     print msg
     return (False,msg)
 
+def Restart():
+    msg = "Restart needed"
+    print msg
+    return (False,msg)
+
 
 
 codeCommands = {
+    '110': Restart(),
     '125': DCOpen,
     '150': DCAboutToOpen,
     '226': ClosingDC,

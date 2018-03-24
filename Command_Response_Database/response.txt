@@ -1,3 +1,4 @@
+Restart_Marker 110
 Data_Connection_Open 125
 File_Status_Ok 150
 Command_OK 200
