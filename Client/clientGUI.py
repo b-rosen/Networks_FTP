@@ -130,7 +130,7 @@ class mainPage(Frame):
             tkMessageBox.showerror("Error",message)
 
         logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",height=1,width=7,command=logOutGUI)
-        logOutButton.place(x=20,y=20,anchor=CENTER)
+        logOutButton.place(x=610,y=20,anchor=CENTER)
 
         openFileButton = Button(self,text="open",background="#12d168",fg="#4d12b5",height=1,width=7)
         openFileButton.place(x=260,y=85,anchor=CENTER)
@@ -157,7 +157,7 @@ class mainPage(Frame):
             tkMessageBox.showerror("Error",names)
             
         listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
-        listButton.place(x=300,y=20,anchor=CENTER)
+        listButton.place(x=196,y=111,anchor=CENTER)
 
 
 app = clientGUI()
