@@ -168,7 +168,12 @@ class mainPage(Frame):
         listButton.place(x=320,y=80,width=150,anchor=CENTER)
 
         def downloadFile():
-            fileName = serverList.get(serverList.curselection()[0])
+            try:
+                fileName = serverList.get(serverList.curselection()[0])
+            except Exception:
+                tkMessageBox.showerror("Error","Nothing selected")
+                return
+            
             sFilePath = '/' + fileName
             cFilePath = 'Downloads/'+fileName
             reply, msg = Client_FTP.PassiveMode()

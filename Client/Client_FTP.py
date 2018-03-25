@@ -155,7 +155,6 @@ def getList(listData):
             entryType.append("Directory")
         else:
             entryType.append("File")
-    print entryType
     return (entryName,entryType)
 
 def ListFiles(directoryPath):

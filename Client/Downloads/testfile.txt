@@ -1,0 +1,4 @@
+test 1 test test bits month date time testfile.txt
+test 1 test test bits month date time testImage.jpg
+test 1 test test bits month date time fileName3
+test 4 test test bits month date time directoryName1
