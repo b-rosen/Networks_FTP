@@ -221,7 +221,7 @@ def PassiveMode():
     else:
         return codeCommands[code]()
 
-def download(filePath):
+def Download(filePath, savePath):
     Send('RETR '+ filePath)
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
@@ -231,7 +231,7 @@ def download(filePath):
         print 'Opening data connection'
     else:
         return codeCommands[code]()
-    data_thread = threading.Thread(None, DataConnection.GetFile)
+    data_thread = threading.Thread(None, DataConnection.GetData)
     data_thread.start()
 
     while True:
@@ -240,17 +240,23 @@ def download(filePath):
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
             print msg
-            rFile = DataConnection.fileData
-            print rFile
+            # rFile = DataConnection.fileData
+            # print rFile
             #Save file
+            file = open(savePath, 'w')
+            file.write(DataConnection.data)
+            file.close()
             return (True, msg)
         elif code == replyCodes['File_Action_Completed']:
             msg = 'Transfer complete'
             print msg
-            rFile = DataConnection.fileData
-            print rFile
+            # rFile = DataConnection.fileData
+            # print rFile
             #Save file
-            return (True, msg,entryNames,entryTypes)
+            file = open(savePath, 'w')
+            file.write(DataConnection.data)
+            file.close()
+            return (True, msg)
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
@@ -397,12 +403,14 @@ codeCommands = {
 }
 
 ''' Testing Code '''
-# StartUp(s_name, s_port)
-# Login()
+StartUp(s_name, s_port)
+Login()
+print GetCurrentDir()
+ChangeDirectory('/test/')
+print GetCurrentDir()
+# ChangePort(10000)
 # PassiveMode()
-# print GetCurrentDir()
-# ChangeDirectory('/test/')
-# print GetCurrentDir()
-# # ChangePort(10000)
 # if ListFiles('/'):
 #     print DataConnection.data
+PassiveMode()
+Download('/testfile.txt', 'testfile.txt')

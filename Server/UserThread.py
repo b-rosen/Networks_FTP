@@ -255,11 +255,23 @@ class UserThread (threading.Thread):
         else:
             self.Send('File_Status_Ok')
 
-        #put file on data connection
+        if len(args) > 0:
+            dirPath = args[0]
+        else:
+            self.Send('Argument_Error', 'No Pathname Specified')
+            return
 
-        if DataConnection.connected == False:
-            DataConnection.Connect()
-        data_thread = threading.Thread(None, DataConnection.SendFile)
+        if os.path.exists(os.path.abspath(self.baseDirectory + args[0])) == False:
+            self.Send('Action_Not_Taken', 'File does not exist')
+        data = []
+        file = open(self.baseDirectory + args[0], 'r')
+        for line in file:
+            data.append(line)
+        file.close()
+        
+        DataConnection.data = ''.join(data)
+        DataConnection.Connect()
+        data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()
 
         self.conn_socket.settimeout(0.5)
