@@ -1,5 +1,6 @@
 from Tkinter import *
 import tkMessageBox
+from PIL import Image, ImageTk
 import Client_FTP
 
 class clientGUI(Tk):
@@ -94,7 +95,7 @@ class logInPage(Frame):
         passwordLabel = Label(self, text="Password:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
         passwordLabel.place(x=320,y=130,anchor=CENTER)
 
-        passwordEntry = Entry(self, width=30,fg="#4d12b5")
+        passwordEntry = Entry(self, width=30,fg="#4d12b5",show='*')
         passwordEntry.place(x=320,y=150,anchor=CENTER)
 
         accountLabel = Label(self, text="Account:",background="#12d168",fg="#4d12b5",font=("Times New Roman",12))
@@ -118,6 +119,7 @@ class logInPage(Frame):
         logInButton.place(x=320,y=240,anchor=CENTER)
 
 class mainPage(Frame):
+    serverList = None
     def __init__(self,parent,gui):
         Frame.__init__(self,parent)
         self.configure(background="#12d168")
@@ -129,14 +131,20 @@ class mainPage(Frame):
                 return
             tkMessageBox.showerror("Error",message)
 
-        logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",height=1,width=7,command=logOutGUI)
-        logOutButton.place(x=610,y=20,anchor=CENTER)
-
-        openFileButton = Button(self,text="open",background="#12d168",fg="#4d12b5",height=1,width=7)
-        openFileButton.place(x=260,y=85,anchor=CENTER)
-
-        upFileButton = Button(self,text="up",background="#12d168",fg="#4d12b5",height=1,width=7)
-        upFileButton.place(x=320,y=85,anchor=CENTER)
+        logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",command=logOutGUI)
+        logOutButton.place(x=590,y=30,anchor=CENTER)
+        
+        openFileImg = Image.open("images/openFolder.png")
+        openFileButImg = ImageTk.PhotoImage(openFileImg)
+        openFileButton = Button(self,image=openFileButImg,background="#12d168")
+        openFileButton.place(x=30,y=30,anchor=CENTER)
+        openFileButton.image = openFileButImg
+        
+        upFileImg = Image.open("images/fileUp.png")
+        upFileButImg = ImageTk.PhotoImage(upFileImg)
+        upFileButton = Button(self,image=upFileButImg,background="#12d168")
+        upFileButton.place(x=70,y=30,anchor=CENTER)
+        upFileButton.image = upFileButImg
 
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
@@ -146,6 +154,7 @@ class mainPage(Frame):
             if reply:
                 result,msg,names,types = Client_FTP.ListFiles('')
                 if result:
+                    serverList.delete(0,END)
                     counter = 0
                     for name in names:
                         serverList.insert(END,name)
@@ -155,8 +164,8 @@ class mainPage(Frame):
                     return
             tkMessageBox.showerror("Error",msg)
 
-        listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
-        listButton.place(x=196,y=111,anchor=CENTER)
+        listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",command=listItems)
+        listButton.place(x=320,y=80,width=150,anchor=CENTER)
 
         def downloadFile():
             fileName = serverList.get(serverList.curselection()[0])
@@ -165,9 +174,12 @@ class mainPage(Frame):
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 Client_FTP.Download(sFilePath,cFilePath)
-
-        downloadButton = Button(self,text="download",background="#12d168",fg="#4d12b5",height=1,width=7,command=downloadFile)
-        downloadButton.place(x=380,y=85,anchor=CENTER)
+                
+        downloadImg = Image.open("images/download.png")
+        downloadButImg = ImageTk.PhotoImage(downloadImg)
+        downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)
+        downloadButton.place(x=110,y=30,anchor=CENTER)
+        downloadButton.image = downloadButImg
 
 
 app = clientGUI()
