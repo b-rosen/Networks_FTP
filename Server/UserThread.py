@@ -221,10 +221,49 @@ class UserThread (threading.Thread):
         else:
             dirPath = self.baseDirectory + args[0]
         data = check_output(['ls', '-l', dirPath])
-        #data = "fakedata\ntest 1 test test bits month date time testfile.txt\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
+        #data = "fakedata\ntest 1 test test bits month date time fileName1\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
         data = data.split('\n')
         data.pop(0)
         data.pop(-1)
+        DataConnection.data = CRLF.join(data)
+        DataConnection.Connect()
+        data_thread = threading.Thread(None, DataConnection.SendData)
+        data_thread.start()
+
+        self.conn_socket.settimeout(0.5)
+        while DataConnection.active:
+            try:
+                message = self.conn_socket.recv(2048)
+            except timeout:
+                continue
+
+            cmd, args = self.ParseCommand(message)
+            if cmd == "QUIT" or cmd == 'ABOR' or cmd == 'STAT':
+                commands[cmd](args)
+                return
+        self.conn_socket.settimeout(None)
+        self.Send('Closing_Data_Connection')
+        DataConnection.Close()
+
+    def ListNames(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        if DataConnection.connected:
+            self.Send('Data_Connection_Open')
+        else:
+            self.Send('File_Status_Ok')
+
+        dirPath = str()
+        if len(args) == 0:
+            dirPath = self.baseDirectory + self.currentDirectory
+        else:
+            dirPath = self.baseDirectory + args[0]
+        data = os.listdir(dirPath)
+        if len(data) > 0 and data[0] == '.DS_Store':
+            data.pop(0)
+        #data = "fakedata\ntest 1 test test bits month date time fileName1\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
         DataConnection.data = CRLF.join(data)
         DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
@@ -268,7 +307,7 @@ class UserThread (threading.Thread):
         for line in file:
             data.append(line)
         file.close()
-        
+
         DataConnection.data = ''.join(data)
         DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
@@ -324,6 +363,7 @@ class UserThread (threading.Thread):
         'PORT': DataPortChange,
         'PASV': PassiveMode,
         'LIST': ListDir,
+        'NLST': ListNames,
         'PWD': PrintCurrentDir,
         'NOOP': NoOp
     }
