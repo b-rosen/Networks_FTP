@@ -12,13 +12,12 @@ connection = None
 fileData = None
 
 address = str()
-port = int()
+port = 20
 
 
 def Close():
     global connection, active, connected, initiateConn
     while active:
-        print 'Waiting for transfer'
         continue
     connection.close()
     if initiateConn == False:
@@ -65,6 +64,7 @@ def Connect():
         print 'DC: Initiated Connection'
     else:
         data_socket = socket(AF_INET, SOCK_STREAM)
+        data_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         data_socket.bind(('', port))
         data_socket.listen(1)
         print 'DC: Connected'

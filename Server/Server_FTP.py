@@ -6,6 +6,7 @@ import UserThread
 s_port = 2400
 
 s_socket = socket(AF_INET, SOCK_STREAM)
+s_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 s_socket.bind(('', s_port))
 # Array to contain all created threads
 threads = []

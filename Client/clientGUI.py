@@ -46,6 +46,9 @@ class serverSelectPage(Frame):
         portName = Entry(self, width=30,fg="#4d12b5")
         portName.place(x=320,y=185,anchor=CENTER)
 
+        serverName.bind('<Return>', lambda _: serverInput())
+        portName.bind('<Return>', lambda _: serverInput())
+
         def serverInput():
             Client_FTP.s_name = serverName.get()
             Client_FTP.s_port = int(portName.get())
@@ -69,6 +72,8 @@ class guestOrUserPage(Frame):
 
         guestSelect = Radiobutton(self,text="guest",font=("Times New Roman",12),background="#12d168",fg="#4d12b5",value=2,variable=selected)
         guestSelect.place(x=320,y=180,anchor=CENTER)
+
+        selected.set(1)
 
         def getSelected():
             if selected.get() == 1:
@@ -104,12 +109,17 @@ class logInPage(Frame):
         accountEntry = Entry(self, width=30,fg="#4d12b5")
         accountEntry.place(x=320,y=200,anchor=CENTER)
 
+        userName.bind('<Return>', lambda _: logIn())
+        passwordEntry.bind('<Return>', lambda _: logIn())
+        accountEntry.bind('<Return>', lambda _: logIn())
+
         def logIn():
             Client_FTP.username = userName.get()
             Client_FTP.password = passwordEntry.get()
             Client_FTP.account = accountEntry.get()
             result, message = Client_FTP.Login()
             if result:
+                Client_FTP.PassiveMode()
                 gui.display(mainPage)
                 return
             tkMessageBox.showerror("Error",message)
@@ -133,13 +143,13 @@ class mainPage(Frame):
 
         logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",command=logOutGUI)
         logOutButton.place(x=590,y=30,anchor=CENTER)
-        
+
         openFileImg = Image.open("images/openFolder.png")
         openFileButImg = ImageTk.PhotoImage(openFileImg)
         openFileButton = Button(self,image=openFileButImg,background="#12d168")
         openFileButton.place(x=30,y=30,anchor=CENTER)
         openFileButton.image = openFileButImg
-        
+
         upFileImg = Image.open("images/fileUp.png")
         upFileButImg = ImageTk.PhotoImage(upFileImg)
         upFileButton = Button(self,image=upFileButImg,background="#12d168")
@@ -149,7 +159,25 @@ class mainPage(Frame):
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
 
+        def downloadFile(event):
+            try:
+                fileName = serverList.get(serverList.curselection()[0])
+            except Exception:
+                tkMessageBox.showerror("Error","Nothing selected")
+                return
+
+            sFilePath = '/' + fileName
+            cFilePath = 'Downloads/'+fileName
+            reply, msg = Client_FTP.PassiveMode()
+            if reply:
+                result, msg = Client_FTP.Download(sFilePath,cFilePath)
+                if result:
+                    tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully')
+                    return
+            tkMessageBox.showerror("Error", msg)
+
         def listItems():
+            serverList.bind('<Double-Button-1>', downloadFile)
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 result,msg,names,types = Client_FTP.ListFiles('')
@@ -167,19 +195,6 @@ class mainPage(Frame):
         listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",command=listItems)
         listButton.place(x=320,y=80,width=150,anchor=CENTER)
 
-        def downloadFile():
-            try:
-                fileName = serverList.get(serverList.curselection()[0])
-            except Exception:
-                tkMessageBox.showerror("Error","Nothing selected")
-                return
-            
-            sFilePath = '/' + fileName
-            cFilePath = 'Downloads/'+fileName
-            reply, msg = Client_FTP.PassiveMode()
-            if reply:
-                Client_FTP.Download(sFilePath,cFilePath)
-                
         downloadImg = Image.open("images/download.png")
         downloadButImg = ImageTk.PhotoImage(downloadImg)
         downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)

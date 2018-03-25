@@ -215,13 +215,13 @@ class UserThread (threading.Thread):
         else:
             self.Send('File_Status_Ok')
 
-        #dirPath = str()
-        #if len(args) == 0:
-            #dirPath = self.baseDirectory + self.currentDirectory
-        #else:
-            #dirPath = self.baseDirectory + args[0]
-        #data = check_output(['ls', '-l', dirPath])
-        data = "fakedata\ntest 1 test test bits month date time testfile.txt\ntest 1 test test bits month date time testImage.jpg\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
+        dirPath = str()
+        if len(args) == 0:
+            dirPath = self.baseDirectory + self.currentDirectory
+        else:
+            dirPath = self.baseDirectory + args[0]
+        data = check_output(['ls', '-l', dirPath])
+        # data = "fakedata\ntest 1 test test bits month date time testfile.txt\ntest 1 test test bits month date time testImage.jpg\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
         data = data.split('\n')
         data.pop(0)
         data.pop(-1)
@@ -289,11 +289,6 @@ class UserThread (threading.Thread):
             self.Send('Not_Logged_In')
             return
 
-        if DataConnection.connected:
-            self.Send('Data_Connection_Open')
-        else:
-            self.Send('File_Status_Ok')
-
         if len(args) > 0:
             dirPath = args[0]
         else:
@@ -302,11 +297,22 @@ class UserThread (threading.Thread):
 
         if os.path.exists(os.path.abspath(self.baseDirectory + args[0])) == False:
             self.Send('Action_Not_Taken', 'File does not exist')
+            return
+
         data = []
-        file = open(self.baseDirectory + args[0], 'r')
-        for line in file:
-            data.append(line)
-        file.close()
+        try:
+            file = open(self.baseDirectory + args[0], 'r')
+            for line in file:
+                data.append(line)
+            file.close()
+        except IOError:
+            self.Send('Action_Not_Taken', 'Given Path is a Directory')
+            return
+
+        if DataConnection.connected:
+            self.Send('Data_Connection_Open')
+        else:
+            self.Send('File_Status_Ok')
 
         DataConnection.data = ''.join(data)
         DataConnection.Connect()
