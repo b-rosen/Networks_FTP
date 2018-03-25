@@ -16,23 +16,28 @@ port = int()
 
 
 def Close():
-    global connection, active, connected
+    global connection, active, connected, initiateConn
     while active:
         print 'Waiting for transfer'
         continue
     connection.close()
+    if initiateConn == False:
+        data_socket.close()
     print 'DC: Connection Closed'
     connected = False
 
 def GetData(buffer=2048):
-    global action, connection, data
+    global active, connection, data
     print 'DC: Getting Data'
     msg = ' '
     dataList = []
     active = True
-    while msg != '':
+    counter = 5
+    while counter > 0:
         msg = connection.recv(buffer)
         dataList.append(msg)
+        if msg == '':
+            counter -= 1
     datastr = str()
     datastr = ''.join(dataList)
     data = datastr

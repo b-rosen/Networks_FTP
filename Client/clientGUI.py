@@ -157,13 +157,15 @@ class mainPage(Frame):
 
         listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
         listButton.place(x=196,y=111,anchor=CENTER)
-        
+
         def downloadFile():
             fileName = serverList.get(serverList.curselection()[0])
             sFilePath = '/' + fileName
             cFilePath = 'Downloads/'+fileName
-            Client_FTP.Download(sFilePath,cFilePath)
-            
+            reply, msg = Client_FTP.PassiveMode()
+            if reply:
+                Client_FTP.Download(sFilePath,cFilePath)
+
         downloadButton = Button(self,text="download",background="#12d168",fg="#4d12b5",height=1,width=7,command=downloadFile)
         downloadButton.place(x=380,y=85,anchor=CENTER)
 
