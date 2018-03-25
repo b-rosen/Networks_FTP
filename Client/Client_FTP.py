@@ -403,14 +403,14 @@ codeCommands = {
 }
 
 ''' Testing Code '''
-StartUp(s_name, s_port)
-Login()
-print GetCurrentDir()
-ChangeDirectory('/test/')
-print GetCurrentDir()
+#StartUp(s_name, s_port)
+#Login()
+#print GetCurrentDir()
+#ChangeDirectory('/test/')
+#print GetCurrentDir()
 # ChangePort(10000)
 # PassiveMode()
 # if ListFiles('/'):
 #     print DataConnection.data
-PassiveMode()
-Download('/testfile.txt', 'testfile.txt')
+#PassiveMode()
+#Download('/testfile.txt', 'testfile.txt')

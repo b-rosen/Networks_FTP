@@ -221,7 +221,7 @@ class UserThread (threading.Thread):
         else:
             dirPath = self.baseDirectory + args[0]
         data = check_output(['ls', '-l', dirPath])
-        #data = "fakedata\ntest 1 test test bits month date time fileName1\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
+        #data = "fakedata\ntest 1 test test bits month date time testfile.txt\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
         data = data.split('\n')
         data.pop(0)
         data.pop(-1)

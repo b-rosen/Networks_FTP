@@ -138,9 +138,6 @@ class mainPage(Frame):
         upFileButton = Button(self,text="up",background="#12d168",fg="#4d12b5",height=1,width=7)
         upFileButton.place(x=320,y=85,anchor=CENTER)
 
-        downloadButton = Button(self,text="download",background="#12d168",fg="#4d12b5",height=1,width=7)
-        downloadButton.place(x=380,y=85,anchor=CENTER)
-
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
 
@@ -160,6 +157,15 @@ class mainPage(Frame):
 
         listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",height=1,width=7,command=listItems)
         listButton.place(x=196,y=111,anchor=CENTER)
+        
+        def downloadFile():
+            fileName = serverList.get(serverList.curselection()[0])
+            sFilePath = '/' + fileName
+            cFilePath = 'Downloads/'+fileName
+            Client_FTP.Download(sFilePath,cFilePath)
+            
+        downloadButton = Button(self,text="download",background="#12d168",fg="#4d12b5",height=1,width=7,command=downloadFile)
+        downloadButton.place(x=380,y=85,anchor=CENTER)
 
 
 app = clientGUI()
