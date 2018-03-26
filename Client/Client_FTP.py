@@ -148,6 +148,8 @@ def getList(listData):
     entryType = []
     entryName = []
     lines = listData.split('\r\n')
+    if lines[-1] == '':
+        lines.pop(-1)
 
     for line in lines:
         values = line.split()
@@ -164,6 +166,7 @@ def ListFiles(directoryPath):
     else:
         commandString = 'LIST ' + directoryPath
         Send(commandString)
+    DataConnection.Connect()
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
         print 'Data Connection Already open'
@@ -228,11 +231,11 @@ def PassiveMode():
 
 def Download(filePath, savePath):
     Send('RETR '+ filePath)
+    DataConnection.Connect()
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
         print 'Data Connection Already open'
     elif code == replyCodes['File_Status_Ok']:
-        DataConnection.Connect()
         print 'Opening data connection'
     else:
         return codeCommands[code]()

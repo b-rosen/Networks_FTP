@@ -334,6 +334,55 @@ class UserThread (threading.Thread):
         self.Send('Closing_Data_Connection')
         DataConnection.Close()
 
+    def ReceiveFile(self, args):
+        if self.loggedIn == False:
+            self.Send('Not_Logged_In')
+            return
+
+        if len(args) > 0:
+            dirPath = args[0]
+        else:
+            self.Send('Argument_Error', 'No Pathname Specified')
+            return
+
+        if os.path.exists(os.path.abspath(self.baseDirectory + args[0])) == False:
+            self.Send('Action_Not_Taken', 'File does not exist')
+            return
+
+        data = []
+        try:
+            file = open(self.baseDirectory + args[0], 'rb')
+            for line in file:
+                data.append(line)
+            file.close()
+        except IOError:
+            self.Send('Action_Not_Taken', 'Given Path is a Directory')
+            return
+
+        if DataConnection.connected:
+            self.Send('Data_Connection_Open')
+        else:
+            self.Send('File_Status_Ok')
+
+        DataConnection.data = ''.join(data)
+        DataConnection.Connect()
+        data_thread = threading.Thread(None, DataConnection.SendData)
+        data_thread.start()
+
+        self.conn_socket.settimeout(0.5)
+        while DataConnection.active:
+            try:
+                message = self.conn_socket.recv(2048)
+            except timeout:
+                continue
+
+            cmd, args = self.ParseCommand(message)
+            if cmd == "QUIT" or cmd == 'ABOR' or cmd == 'STAT':
+                commands[cmd](args)
+                return
+        self.conn_socket.settimeout(None)
+        self.Send('Closing_Data_Connection')
+        DataConnection.Close()
 
     def PrintCurrentDir(self, args):
         if os.path.exists(self.baseDirectory + self.currentDirectory):
