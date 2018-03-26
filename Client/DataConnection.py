@@ -31,7 +31,7 @@ def GetData(buffer=2048):
     msg = ' '
     dataList = []
     active = True
-    counter = 5
+    counter = 10
     while counter > 0:
         msg = connection.recv(buffer)
         dataList.append(msg)
