@@ -119,7 +119,7 @@ class logInPage(Frame):
             Client_FTP.account = accountEntry.get()
             result, message = Client_FTP.Login()
             if result:
-                Client_FTP.PassiveMode()
+                Client_FTP.ChangePort(40000)
                 gui.display(mainPage)
                 return
             tkMessageBox.showerror("Error",message)
@@ -178,7 +178,8 @@ class mainPage(Frame):
 
         def listItems():
             serverList.bind('<Double-Button-1>', downloadFile)
-            reply, msg = Client_FTP.PassiveMode()
+            # reply, msg = Client_FTP.PassiveMode()
+            reply = True
             if reply:
                 result,msg,names,types = Client_FTP.ListFiles('')
                 if result:

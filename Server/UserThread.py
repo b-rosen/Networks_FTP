@@ -301,7 +301,7 @@ class UserThread (threading.Thread):
 
         data = []
         try:
-            file = open(self.baseDirectory + args[0], 'r')
+            file = open(self.baseDirectory + args[0], 'rb')
             for line in file:
                 data.append(line)
             file.close()

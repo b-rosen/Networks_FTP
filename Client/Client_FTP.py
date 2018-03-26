@@ -61,6 +61,7 @@ def Receive(bufferSize=2048, getMessage=False):
     # if code == replyCodes['Syntax_Error']:
     #     print 'Syntax Error'
     #     return '-1'
+    print code
     if getMessage:
         return str(code), msg
     return str(code)
@@ -211,6 +212,9 @@ def PassiveMode():
     code, message = Receive(getMessage=True)
     if code == replyCodes['Passive_Mode']:
         hostPort = message.split(',')
+        if len(hostPort[0]) > 3:
+            hostPort[0] = hostPort[0].split('(')[1]
+            hostPort[-1] = hostPort[-1].split(')')[0]
         DataConnection.address = '.'.join(hostPort[0:4])
         DataConnection.port = int(hostPort[4]) * 256 + int(hostPort[5])
         DataConnection.initiateConn = True
@@ -242,7 +246,7 @@ def Download(filePath, savePath):
             # rFile = DataConnection.fileData
             # print rFile
             #Save file
-            file = open(savePath, 'w')
+            file = open(savePath, 'wb')
             file.write(DataConnection.data)
             file.close()
             return (True, msg)
@@ -252,7 +256,7 @@ def Download(filePath, savePath):
             # rFile = DataConnection.fileData
             # print rFile
             #Save file
-            file = open(savePath, 'w')
+            file = open(savePath, 'wb')
             file.write(DataConnection.data)
             file.close()
             return (True, msg)
