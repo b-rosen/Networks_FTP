@@ -217,6 +217,8 @@ def PassiveMode():
             hostPort[-1] = hostPort[-1].split(')')[0]
         DataConnection.address = '.'.join(hostPort[0:4])
         DataConnection.port = int(hostPort[4]) * 256 + int(hostPort[5])
+        print DataConnection.address
+        print DataConnection.port
         DataConnection.initiateConn = True
         msg = 'Entered Passive Mode'
         print msg
@@ -385,7 +387,7 @@ def Restart():
 
 
 codeCommands = {
-    '110': Restart(),
+    '110': Restart,
     '125': DCOpen,
     '150': DCAboutToOpen,
     '226': ClosingDC,

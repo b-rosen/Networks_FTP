@@ -366,6 +366,7 @@ class UserThread (threading.Thread):
         'QUIT': Logout,
         'REIN': Reinitialise,
         'RETR': SendFile,
+        'STOR': ReceiveFile,
         'PORT': DataPortChange,
         'PASV': PassiveMode,
         'LIST': ListDir,
