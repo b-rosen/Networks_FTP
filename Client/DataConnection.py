@@ -10,6 +10,7 @@ bufferSize = 2048
 data_socket = None
 connection = None
 fileData = None
+sendCounter = 10
 
 address = str()
 port = 20
@@ -44,10 +45,17 @@ def GetData(buffer=2048):
     active = False
 
 def SendData():
-    global active, connection, data
+    global active, connection, data, sendCounter
     active = True
     print 'DC: Sending Data'
-    connection.sendall(data)
+    try:
+        connection.sendall(data)
+    except EBADF:
+        sendCounter -= 1
+        if sendCounter > 0:
+            SendData()
+        else:
+            print 'DC: Failed to send data'
     print 'DC: Data Sent'
     active = False
 
