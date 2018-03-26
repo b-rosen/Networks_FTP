@@ -45,17 +45,19 @@ def GetData(buffer=2048):
     active = False
 
 def SendData():
-    global active, connection, data, sendCounter
+    global active, connection, data
     active = True
     print 'DC: Sending Data'
-    try:
-        connection.sendall(data)
-    except EBADF:
-        sendCounter -= 1
-        if sendCounter > 0:
-            SendData()
-        else:
-            print 'DC: Failed to send data'
+    sendCounter = 10
+    while sendCounter > 0:
+        try:
+            connection.sendall(data)
+        except EBADF:
+            sendCounter -= 1
+            continue
+        break
+    if sendCounter <= 0:
+        print 'DC: Error in sending data'
     print 'DC: Data Sent'
     active = False
 
