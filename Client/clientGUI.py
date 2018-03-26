@@ -119,7 +119,6 @@ class logInPage(Frame):
             Client_FTP.account = accountEntry.get()
             result, message = Client_FTP.Login()
             if result:
-                Client_FTP.ChangePort(40000)
                 gui.display(mainPage)
                 return
             tkMessageBox.showerror("Error",message)
