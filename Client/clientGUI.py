@@ -1,5 +1,6 @@
 from Tkinter import *
 import tkMessageBox
+import tkFileDialog
 from PIL import Image, ImageTk
 import Client_FTP
 
@@ -54,7 +55,7 @@ class serverSelectPage(Frame):
             Client_FTP.s_port = int(portName.get())
             result, message = Client_FTP.StartUp(Client_FTP.s_name,Client_FTP.s_port)
             if result:
-                gui.display(guestOrUserPage)
+                gui.display(logInPage)
                 return
             tkMessageBox.showerror("Error",message)
 
@@ -158,7 +159,24 @@ class mainPage(Frame):
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
 
-        def downloadFile(event):
+        def downloadFile():
+            try:
+                fileName = serverList.get(serverList.curselection()[0])
+            except Exception:
+                tkMessageBox.showerror("Error","Nothing selected")
+                return
+
+            sFilePath = '/' + fileName
+            cFilePath = 'Downloads/'+fileName
+            reply, msg = Client_FTP.PassiveMode()
+            if reply:
+                result, msg = Client_FTP.Download(sFilePath,cFilePath)
+                if result:
+                    tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully')
+                    return
+            tkMessageBox.showerror("Error", msg)
+            
+        def downloadFileClick(event):
             try:
                 fileName = serverList.get(serverList.curselection()[0])
             except Exception:
@@ -176,7 +194,7 @@ class mainPage(Frame):
             tkMessageBox.showerror("Error", msg)
 
         def listItems():
-            serverList.bind('<Double-Button-1>', downloadFile)
+            serverList.bind('<Double-Button-1>', downloadFileClick)
             reply, msg = Client_FTP.PassiveMode()
             reply = True
             if reply:
@@ -200,6 +218,25 @@ class mainPage(Frame):
         downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)
         downloadButton.place(x=110,y=30,anchor=CENTER)
         downloadButton.image = downloadButImg
+        
+        def uploadFile():
+            fileToUploadPath = tkFileDialog.askopenfilename()
+            serverPath = fileToUploadPath.split('/')
+            serverPath = Client_FTP.currentDirectory + serverPath[len(serverPath)-1]
+            reply, msg = Client_FTP.PassiveMode()
+            if reply:
+                result, msg = Client_FTP.upload(fileToUploadPath,serverPath)
+                if result:
+                    tkMessageBox.showinfo('FTP Client', 'File uploaded Successfully')
+                    return
+            tkMessageBox.showerror("Error", msg)
+            
+        
+        uploadImg = Image.open("images/upload.png")
+        uploadButImg = ImageTk.PhotoImage(uploadImg)
+        uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)
+        uploadButton.place(x=150,y=30,anchor=CENTER)
+        uploadButton.image = uploadButImg
 
 
 app = clientGUI()

@@ -231,7 +231,12 @@ def PassiveMode():
 
 def Download(filePath, savePath):
     Send('RETR '+ filePath)
-    DataConnection.Connect()
+    
+    try:
+        DataConnection.Connect()
+    except Exception:
+        return (False,"Could not create data connection")
+    
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
         print 'Data Connection Already open'
@@ -248,9 +253,6 @@ def Download(filePath, savePath):
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
             print msg
-            # rFile = DataConnection.fileData
-            # print rFile
-            #Save file
             file = open(savePath, 'wb')
             file.write(DataConnection.data)
             file.close()
@@ -258,9 +260,6 @@ def Download(filePath, savePath):
         elif code == replyCodes['File_Action_Completed']:
             msg = 'Transfer complete'
             print msg
-            # rFile = DataConnection.fileData
-            # print rFile
-            #Save file
             file = open(savePath, 'wb')
             file.write(DataConnection.data)
             file.close()
@@ -268,6 +267,57 @@ def Download(filePath, savePath):
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
+        
+def Upload(filePath,serverPath):
+    Send('STOR '+ serverPath)
+    
+    try:
+        DataConnection.Connect()
+    except Exception:
+        return (False,"Could not create data connection")
+    
+    code = Receive()
+    if code == replyCodes['Data_Connection_Open']:
+        print 'Data Connection Already open'
+    elif code == replyCodes['File_Status_Ok']:
+        print 'Opening data connection'
+    else:
+        return codeCommands[code]()
+    
+    data = []
+    try:
+        file = open(filePath, 'rb')
+        for line in file:
+            data.append(line)
+        file.close()
+    except IOError:
+        self.Send('Action_Not_Taken', 'Given Path is a Directory')
+        return
+
+    DataConnection.data = ''.join(data)
+    
+    try:
+        DataConnection.Connect()
+    except Exception:
+        return (False,"Could not create data connection")
+    
+    data_thread = threading.Thread(None, DataConnection.SendData)
+    data_thread.start()
+
+    self.conn_socket.settimeout(0.5)
+    while DataConnection.active:
+        try:
+            message = self.conn_socket.recv(2048)
+        except timeout:
+            continue
+
+    cmd, args = self.ParseCommand(message)
+    if cmd == "QUIT" or cmd == 'ABOR' or cmd == 'STAT':
+        commands[cmd](args)
+        return
+    self.conn_socket.settimeout(None)
+    self.Send('Closing_Data_Connection')
+    DataConnection.Close()
 
 @atexit.register
 def Logout():
@@ -387,6 +437,30 @@ def Restart():
     print msg
     return (False,msg)
 
+def NoStorage():
+    msg = "Insufficient Storage Space"
+    print msg
+    return (False,msg)
+
+def NoAccount():
+    msg = "Need account for storing files"
+    print msg
+    return (False,msg)
+
+def AbortPageType():
+    msg = "Action aborted: Page type unknown"
+    print msg
+    return (False,msg)
+
+def AbortStorage():
+    msg = "Action aborted: Exceeded storage allocation"
+    print msg
+    return (False,msg)
+
+def NameNotAllowed():
+    msg = "File name not allowed"
+    print msg
+    return (False,msg)
 
 
 codeCommands = {
@@ -402,12 +476,17 @@ codeCommands = {
     '426': ConnectionClosedAbort,
     '450': FileUnavailable,
     '451': ActionAbortedLocal,
+    '452': NoStorage,
     '500': BadSyntax,
     '501': BadArgument,
     '502': NoCommand,
     '503': BadCommandOrder,
     '530': LoginFail,
-    '550': FileActionFailed
+    '532': NoAccount,
+    '550': FileActionFailed,
+    '551': AbortPageType,
+    '552': AbortStorage,
+    '553': NameNotAllowed
 }
 
 ''' Testing Code '''

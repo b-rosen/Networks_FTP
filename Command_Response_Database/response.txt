@@ -17,9 +17,14 @@ Cant_Open_Data_Connection 425
 Connection_Closed 426
 File_Action_Not_Taken 450
 Action_Aborted_Local 451
+Insufficient_Storage 452
 Syntax_Error 500
 Argument_Error 501
 Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Logged_In 530
+Need_Account 532
 Action_Not_Taken 550
+Page_Type_Unknown 551
+Exceeded_Storage 552
+Name_Not_Allowed 553
