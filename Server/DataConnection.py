@@ -52,7 +52,7 @@ def SendData():
     while sendCounter > 0:
         try:
             connection.sendall(data)
-        except EBADF:
+        except Exception:
             sendCounter -= 1
             continue
         break
