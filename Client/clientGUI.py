@@ -178,7 +178,7 @@ class mainPage(Frame):
 
         def listItems():
             serverList.bind('<Double-Button-1>', downloadFile)
-            # reply, msg = Client_FTP.PassiveMode()
+            reply, msg = Client_FTP.PassiveMode()
             reply = True
             if reply:
                 result,msg,names,types = Client_FTP.ListFiles('')

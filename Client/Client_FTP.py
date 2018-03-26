@@ -61,7 +61,7 @@ def Receive(bufferSize=2048, getMessage=False):
     # if code == replyCodes['Syntax_Error']:
     #     print 'Syntax Error'
     #     return '-1'
-    print code
+    print str(code) + " " + msg
     if getMessage:
         return str(code), msg
     return str(code)
