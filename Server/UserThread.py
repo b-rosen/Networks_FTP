@@ -160,7 +160,14 @@ class UserThread (threading.Thread):
         self.Send('File_Action_Completed')
 
     def ChangeUp(self,args):
-        testPath = "/".join(self.currentDirectory.split("/")[:-1])
+        if len(self.currentDirectory) == 1:
+            self.Send('Action_Not_Taken', 'Already at root directory')
+            return
+
+        testPath = self.currentDirectory.split("/")[:-2]
+        testPath.append(str())
+        testPath = "/".join(testPath)
+        print testPath
         if os.path.exists(self.baseDirectory + testPath):
             self.currentDirectory = testPath
             self.Send('File_Action_Completed')

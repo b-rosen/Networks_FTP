@@ -120,6 +120,7 @@ class logInPage(Frame):
             Client_FTP.account = accountEntry.get()
             result, message = Client_FTP.Login()
             if result:
+                Client_FTP.GetCurrentDir()
                 gui.display(mainPage)
                 return
             tkMessageBox.showerror("Error",message)
@@ -146,7 +147,7 @@ class mainPage(Frame):
 
         serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
         serverList.place(x=320,y=180,anchor=CENTER)
-        
+
         def listItems():
             serverList.bind('<Double-Button-1>', downloadFileClick)
             reply, msg = Client_FTP.PassiveMode()
@@ -200,7 +201,7 @@ class mainPage(Frame):
                 return
             else:
                 serverPath = Client_FTP.currentDirectory
-                if serverPath[len(serverPath)-1] == '/':
+                if serverPath[-1] == '/':
                     serverPath = serverPath + fileName
                 else:
                     serverPath = serverPath + '/'
@@ -226,7 +227,7 @@ class mainPage(Frame):
             if fileToUploadPath == '':
                 return
             serverPath = fileToUploadPath.split('/')
-            serverPath = Client_FTP.currentDirectory + '/' + serverPath[len(serverPath)-1]
+            serverPath = Client_FTP.currentDirectory + '/' + serverPath[-1]
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)
@@ -241,20 +242,20 @@ class mainPage(Frame):
         uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)
         uploadButton.place(x=150,y=30,anchor=CENTER)
         uploadButton.image = uploadButImg
-        
+
         openFileImg = Image.open("images/openFolder.png")
         openFileButImg = ImageTk.PhotoImage(openFileImg)
         openFileButton = Button(self,image=openFileButImg,background="#12d168")
         openFileButton.place(x=30,y=30,anchor=CENTER)
         openFileButton.image = openFileButImg
-        
+
         def goUp():
             reply, msg = Client_FTP.ChangeUp()
             if reply:
                 listItems()
                 return
             tkMessageBox.showerror("Error", msg)
-            
+
         upFileImg = Image.open("images/fileUp.png")
         upFileButImg = ImageTk.PhotoImage(upFileImg)
         upFileButton = Button(self,image=upFileButImg,background="#12d168",command =goUp)

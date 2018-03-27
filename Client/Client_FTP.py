@@ -18,7 +18,7 @@ username = 'Benjy'
 password = 'Hello'
 account = str()
 connected = False
-currentDirectory = 'test/'
+currentDirectory = str()
 import atexit
 # ------------------------------------------
 
@@ -124,9 +124,14 @@ def LoginFail():
     return (False, msg)
 
 def ChangeDirectory(path):
+    global currentDirectory
+
     Send('CWD ' + path)
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
+        currentDirectory = path
+        if currentDirectory[-1] != '/':
+            currentDirectory += '/'
         msg = 'Directory changed'
         print msg
         return (True,msg)
@@ -134,9 +139,14 @@ def ChangeDirectory(path):
         return codeCommands[code]()
 
 def ChangeUp():
+    global currentDirectory
+    print currentDirectory
     Send('CDUP')
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
+        currentDirectory = currentDirectory.split("/")[:-2]
+        currentDirectory.append(str())
+        currentDirectory = "/".join(currentDirectory)
         msg =  'Changed to parent directory'
         print msg
         return (True,msg)
@@ -298,7 +308,7 @@ def Upload(filePath,serverPath):
             code = Receive()
         except timeout:
             continue
-            
+
         if code == replyCodes['Closing_Data_Connection']:
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
@@ -338,15 +348,18 @@ def Logout():
         return (False, msg)
 
 def GetCurrentDir():
+    global currentDirectory
+
     Send('PWD')
-    code, message = Receive(getMessage=True)
+    code, path = Receive(getMessage=True)
     if code == replyCodes['Pathname_Created']:
-        if message[0] == '\"':
-            message = message[1:]
-        if message[-1] == '\"':
-            message = message[:-1]
-        message = message.replace('\"\"', '\"')
-        return (True, message)
+        if path[0] == '\"':
+            path = path[1:]
+        if path[-1] == '\"':
+            path = path[:-1]
+        path = path.replace('\"\"', '\"')
+        currentDirectory = path
+        return (True, path)
     else:
         return codeCommands[code]()
 
