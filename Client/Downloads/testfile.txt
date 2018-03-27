@@ -1,0 +1,2 @@
+Testing the text file sending capability of ftp server
+And client
