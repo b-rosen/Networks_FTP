@@ -175,7 +175,7 @@ class mainPage(Frame):
                     tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully')
                     return
             tkMessageBox.showerror("Error", msg)
-            
+
         def downloadFileClick(event):
             try:
                 fileName = serverList.get(serverList.curselection()[0])
@@ -218,20 +218,20 @@ class mainPage(Frame):
         downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)
         downloadButton.place(x=110,y=30,anchor=CENTER)
         downloadButton.image = downloadButImg
-        
+
         def uploadFile():
             fileToUploadPath = tkFileDialog.askopenfilename()
             serverPath = fileToUploadPath.split('/')
             serverPath = Client_FTP.currentDirectory + serverPath[len(serverPath)-1]
             reply, msg = Client_FTP.PassiveMode()
             if reply:
-                result, msg = Client_FTP.upload(fileToUploadPath,serverPath)
+                result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)
                 if result:
                     tkMessageBox.showinfo('FTP Client', 'File uploaded Successfully')
                     return
             tkMessageBox.showerror("Error", msg)
-            
-        
+
+
         uploadImg = Image.open("images/upload.png")
         uploadButImg = ImageTk.PhotoImage(uploadImg)
         uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)

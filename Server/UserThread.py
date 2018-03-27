@@ -149,7 +149,7 @@ class UserThread (threading.Thread):
             return
         elif os.path.exists(self.baseDirectory + path) == False:
             # Send 550 response (file not found)
-            self.Send('Action_Not_Taken')
+            self.Send('Action_Not_Taken', 'File not found')
             return
 
         if path[-1] != '/':
@@ -345,16 +345,10 @@ class UserThread (threading.Thread):
             self.Send('Argument_Error', 'No Pathname Specified')
             return
 
-        if os.path.exists(os.path.abspath(self.baseDirectory + args[0])) == False:
-            self.Send('Action_Not_Taken', 'File does not exist')
-            return
+        DataConnection.Connect()
 
-        data = []
         try:
-            file = open(self.baseDirectory + args[0], 'rb')
-            for line in file:
-                data.append(line)
-            file.close()
+            file = open(self.baseDirectory + args[0], 'wb')
         except IOError:
             self.Send('Action_Not_Taken', 'Given Path is a Directory')
             return
@@ -364,9 +358,7 @@ class UserThread (threading.Thread):
         else:
             self.Send('File_Status_Ok')
 
-        DataConnection.data = ''.join(data)
-        DataConnection.Connect()
-        data_thread = threading.Thread(None, DataConnection.SendData)
+        data_thread = threading.Thread(None, DataConnection.GetData)
         data_thread.start()
 
         self.conn_socket.settimeout(0.5)
@@ -383,6 +375,9 @@ class UserThread (threading.Thread):
         self.conn_socket.settimeout(None)
         self.Send('Closing_Data_Connection')
         DataConnection.Close()
+
+        file.write(DataConnection.data)
+        file.close()
 
     def PrintCurrentDir(self, args):
         if os.path.exists(self.baseDirectory + self.currentDirectory):

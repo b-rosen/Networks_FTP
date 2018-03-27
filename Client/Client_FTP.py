@@ -231,12 +231,12 @@ def PassiveMode():
 
 def Download(filePath, savePath):
     Send('RETR '+ filePath)
-    
+
     try:
         DataConnection.Connect()
     except Exception:
         return (False,"Could not create data connection")
-    
+
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
         print 'Data Connection Already open'
@@ -267,23 +267,15 @@ def Download(filePath, savePath):
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
-        
+
 def Upload(filePath,serverPath):
-    Send('STOR '+ serverPath)
-    
+    Send('STOR ' + serverPath)
+
     try:
         DataConnection.Connect()
     except Exception:
         return (False,"Could not create data connection")
-    
-    code = Receive()
-    if code == replyCodes['Data_Connection_Open']:
-        print 'Data Connection Already open'
-    elif code == replyCodes['File_Status_Ok']:
-        print 'Opening data connection'
-    else:
-        return codeCommands[code]()
-    
+
     data = []
     try:
         file = open(filePath, 'rb')
@@ -295,29 +287,29 @@ def Upload(filePath,serverPath):
         return
 
     DataConnection.data = ''.join(data)
-    
-    try:
-        DataConnection.Connect()
-    except Exception:
-        return (False,"Could not create data connection")
-    
+
     data_thread = threading.Thread(None, DataConnection.SendData)
     data_thread.start()
 
-    self.conn_socket.settimeout(0.5)
+    c_socket.settimeout(0.5)
     while DataConnection.active:
-        try:
-            message = self.conn_socket.recv(2048)
-        except timeout:
-            continue
-
-    cmd, args = self.ParseCommand(message)
-    if cmd == "QUIT" or cmd == 'ABOR' or cmd == 'STAT':
-        commands[cmd](args)
-        return
-    self.conn_socket.settimeout(None)
-    self.Send('Closing_Data_Connection')
+        code = Receive()
+        if code == replyCodes['Closing_Data_Connection']:
+            DataConnection.Close()
+            msg = 'Transfer complete - Closing data connection'
+            print msg
+            return (True, msg)
+        elif code == replyCodes['File_Action_Completed']:
+            msg = 'Transfer complete'
+            print msg
+            return (True, msg)
+        elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
+            DataConnection.Close()
+            return codeCommands[code]()
     DataConnection.Close()
+    c_socket.settimeout(None)
+    msg = 'Successfully sent data'
+    return (True, msg)
 
 @atexit.register
 def Logout():
