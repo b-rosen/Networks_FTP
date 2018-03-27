@@ -12,4 +12,3 @@ users = {
     'Test': UserInfo(password = 'Whaddup', account = 'Wits'),
     'anonymous': UserInfo(),
 }
-print users['Shane'].password

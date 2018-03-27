@@ -9,8 +9,6 @@ initiateConn = False
 bufferSize = 2048
 data_socket = None
 connection = None
-fileData = None
-sendCounter = 10
 
 address = str()
 port = 20
@@ -64,8 +62,11 @@ def SendData():
 def Connect():
     global initiateConn, connection, address, port, data_socket, connected
     if connected:
-        print 'Already Connected'
+        print 'DC: Already Connected'
         return
+
+    connection = None
+    data_socket = None
 
     if initiateConn:
         sleep(0.1)
@@ -77,6 +78,6 @@ def Connect():
         data_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         data_socket.bind(('', port))
         data_socket.listen(1)
-        print 'DC: Connected'
         connection, addr = data_socket.accept()
+        print 'DC: Connected'
     connected = True

@@ -140,7 +140,6 @@ def ChangeDirectory(path):
 
 def ChangeUp():
     global currentDirectory
-    print currentDirectory
     Send('CDUP')
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
@@ -176,15 +175,19 @@ def ListFiles(directoryPath):
     else:
         commandString = 'LIST ' + directoryPath
         Send(commandString)
-    DataConnection.Connect()
+
+    try:
+        DataConnection.Connect()
+    except Exception:
+        return (False,"Could not create data connection",[],[])
+
     code = Receive()
     if code == replyCodes['Data_Connection_Open']:
         print 'Data Connection Already open'
     elif code == replyCodes['File_Status_Ok']:
-        DataConnection.Connect()
         print 'Opening data connection'
     else:
-        return codeCommands[code]()
+        return codeCommands[code](),[],[]
     data_thread = threading.Thread(None, DataConnection.GetData)
     data_thread.start()
 
@@ -203,7 +206,7 @@ def ListFiles(directoryPath):
             return (True, msg,entryNames,entryTypes)
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
-            return codeCommands[code]()
+            return codeCommands[code](),[],[]
 
 def ChangePort(newPort):
     DataConnection.port = int(newPort)
@@ -287,6 +290,12 @@ def Upload(filePath,serverPath):
     except Exception:
         return (False,"Could not create data connection")
 
+    code = Receive()
+    if code == replyCodes['File_Status_Ok'] or code == replyCodes['Data_Connection_Open']:
+        print 'Connection Successful'
+    else:
+        return codeCommands[code]()
+
     data = []
     try:
         file = open(filePath, 'rb')
@@ -321,7 +330,6 @@ def Upload(filePath,serverPath):
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
-    print 'here'
     DataConnection.Close()
     c_socket.settimeout(None)
     msg = 'Successfully sent data'

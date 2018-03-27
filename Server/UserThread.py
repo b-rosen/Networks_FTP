@@ -167,7 +167,6 @@ class UserThread (threading.Thread):
         testPath = self.currentDirectory.split("/")[:-2]
         testPath.append(str())
         testPath = "/".join(testPath)
-        print testPath
         if os.path.exists(self.baseDirectory + testPath):
             self.currentDirectory = testPath
             self.Send('File_Action_Completed')
@@ -218,11 +217,12 @@ class UserThread (threading.Thread):
             self.Send('Not_Logged_In')
             return
 
+        DataConnection.Connect()
+
         if DataConnection.connected:
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
-
         dirPath = str()
         if len(args) == 0:
             dirPath = self.baseDirectory + self.currentDirectory
@@ -251,7 +251,6 @@ class UserThread (threading.Thread):
             data.pop(0)
             data.pop(-1)
         DataConnection.data = CRLF.join(data)
-        DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()
 
@@ -275,6 +274,8 @@ class UserThread (threading.Thread):
             self.Send('Not_Logged_In')
             return
 
+        DataConnection.Connect()
+
         if DataConnection.connected:
             self.Send('Data_Connection_Open')
         else:
@@ -289,7 +290,6 @@ class UserThread (threading.Thread):
         if len(data) > 0 and data[0] == '.DS_Store':
             data.pop(0)
         DataConnection.data = CRLF.join(data)
-        DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()
 
@@ -319,6 +319,8 @@ class UserThread (threading.Thread):
             self.Send('Argument_Error', 'No Pathname Specified')
             return
 
+        DataConnection.Connect()
+
         if os.path.exists(self.baseDirectory + args[0]) == False:
             self.Send('Action_Not_Taken', 'File does not exist')
             return
@@ -339,7 +341,6 @@ class UserThread (threading.Thread):
             self.Send('File_Status_Ok')
 
         DataConnection.data = ''.join(data)
-        DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()
 
@@ -359,6 +360,8 @@ class UserThread (threading.Thread):
         DataConnection.Close()
 
     def ReceiveFile(self, args):
+        DataConnection.Connect()
+
         if self.loggedIn == False:
             self.Send('Not_Logged_In')
             return
@@ -368,8 +371,6 @@ class UserThread (threading.Thread):
         else:
             self.Send('Argument_Error', 'No Pathname Specified')
             return
-
-        DataConnection.Connect()
 
         try:
             file = open(self.baseDirectory + args[0], 'wb')
