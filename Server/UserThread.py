@@ -5,6 +5,7 @@ import random
 import DataConnection
 from socket import gethostname, gethostbyname, timeout
 from subprocess import check_output
+from platform import system
 
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
 replyCodes = {}
@@ -220,11 +221,28 @@ class UserThread (threading.Thread):
             dirPath = self.baseDirectory + self.currentDirectory
         else:
             dirPath = self.baseDirectory + args[0]
-        data = check_output(['ls', '-l', dirPath])
-        #data = "fakedata\ntest 1 test test bits month date time testfile.txt\ntest 1 test test bits month date time testImage.jpg\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
-        data = data.split('\n')
-        data.pop(0)
-        data.pop(-1)
+        
+        if system() == "Windows":
+            windowsPath = dirPath.replace('/','\\')
+            data = check_output(['dir', windowsPath],shell=True)
+            
+            data = data.split(CRLF)
+            data = data[7:-3]
+            temp = [] 
+            for lines in data:
+                lines = lines.split()
+                if lines[3] == "<DIR>":
+                    lines[1] = '5'
+                else:
+                    lines[1] = '1'
+                lines = ' '.join(lines)
+                temp.append(lines)
+            data = temp
+        else:
+            data = check_output(['ls', '-l', dirPath])
+            data = data.split('\n')
+            data.pop(0)
+            data.pop(-1)
         DataConnection.data = CRLF.join(data)
         DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
@@ -263,7 +281,6 @@ class UserThread (threading.Thread):
         data = os.listdir(dirPath)
         if len(data) > 0 and data[0] == '.DS_Store':
             data.pop(0)
-        #data = "fakedata\ntest 1 test test bits month date time fileName1\ntest 1 test test bits month date time fileName2\ntest 1 test test bits month date time fileName3\ntest 4 test test bits month date time directoryName1\n"
         DataConnection.data = CRLF.join(data)
         DataConnection.Connect()
         data_thread = threading.Thread(None, DataConnection.SendData)
