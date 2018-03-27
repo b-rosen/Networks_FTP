@@ -170,7 +170,10 @@ class mainPage(Frame):
             except Exception:
                 tkMessageBox.showerror("Error","Nothing selected")
                 return
-
+            fileTest = fileName.split(".")
+            if len(fileTest) <= 1:
+                tkMessageBox.showerror("Error","the selected item is not a file that can be downloaded")
+                return
             sFilePath = '/' + fileName
             cFilePath = 'Downloads/'+fileName
             reply, msg = Client_FTP.PassiveMode()
@@ -242,7 +245,34 @@ class mainPage(Frame):
         uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)
         uploadButton.place(x=150,y=30,anchor=CENTER)
         uploadButton.image = uploadButImg
+<<<<<<< HEAD
 
+=======
+        
+        def openFolder():
+            try:
+                fileName = serverList.get(serverList.curselection()[0])
+            except Exception:
+                tkMessageBox.showerror("Error","Nothing selected")
+                return
+            fileTest = fileName.split(".")
+            if len(fileTest) > 1:
+                tkMessageBox.showerror("Error","the selected item is not a directory")
+                return
+            serverPath = Client_FTP.currentDirectory
+            if serverPath[len(serverPath)-1] == '/':
+                serverPath = serverPath + fileName
+            else:
+                serverPath = serverPath + '/'
+                serverPath = serverPath + fileName
+            reply, msg = Client_FTP.ChangeDirectory(serverPath)
+            if reply:
+                listItems()
+                return
+            tkMessageBox.showerror("Error", msg)
+            
+        
+>>>>>>> 0c7b8e8f2f8be87320adaa6f623656f410835868
         openFileImg = Image.open("images/openFolder.png")
         openFileButImg = ImageTk.PhotoImage(openFileImg)
         openFileButton = Button(self,image=openFileButImg,background="#12d168")
