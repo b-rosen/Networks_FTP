@@ -221,14 +221,14 @@ class UserThread (threading.Thread):
             dirPath = self.baseDirectory + self.currentDirectory
         else:
             dirPath = self.baseDirectory + args[0]
-        
+
         if system() == "Windows":
             windowsPath = dirPath.replace('/','\\')
             data = check_output(['dir', windowsPath],shell=True)
-            
+
             data = data.split(CRLF)
             data = data[7:-3]
-            temp = [] 
+            temp = []
             for lines in data:
                 lines = lines.split()
                 if lines[3] == "<DIR>":
@@ -312,7 +312,7 @@ class UserThread (threading.Thread):
             self.Send('Argument_Error', 'No Pathname Specified')
             return
 
-        if os.path.exists(os.path.abspath(self.baseDirectory + args[0])) == False:
+        if os.path.exists(self.baseDirectory + args[0]) == False:
             self.Send('Action_Not_Taken', 'File does not exist')
             return
 
