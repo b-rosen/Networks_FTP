@@ -18,7 +18,7 @@ username = 'Benjy'
 password = 'Hello'
 account = str()
 connected = False
-currentDirectory = str()
+currentDirectory = 'test/'
 import atexit
 # ------------------------------------------
 
