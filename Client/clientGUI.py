@@ -221,10 +221,11 @@ class mainPage(Frame):
 
         def uploadFile():
             fileToUploadPath = tkFileDialog.askopenfilename()
+            print fileToUploadPath
             if fileToUploadPath == '':
                 return
             serverPath = fileToUploadPath.split('/')
-            serverPath = Client_FTP.currentDirectory + serverPath[len(serverPath)-1]
+            serverPath = Client_FTP.currentDirectory + '/' + serverPath[len(serverPath)-1]
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)

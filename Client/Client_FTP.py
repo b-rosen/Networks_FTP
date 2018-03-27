@@ -269,6 +269,7 @@ def Download(filePath, savePath):
             return codeCommands[code]()
 
 def Upload(filePath,serverPath):
+    global c_socket
     Send('STOR ' + serverPath)
 
     try:
@@ -293,7 +294,11 @@ def Upload(filePath,serverPath):
 
     c_socket.settimeout(0.5)
     while DataConnection.active:
-        code = Receive()
+        try:
+            code = Receive()
+        except timeout:
+            continue
+            
         if code == replyCodes['Closing_Data_Connection']:
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
@@ -306,6 +311,7 @@ def Upload(filePath,serverPath):
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
+    print 'here'
     DataConnection.Close()
     c_socket.settimeout(None)
     msg = 'Successfully sent data'
