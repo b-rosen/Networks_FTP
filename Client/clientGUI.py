@@ -263,13 +263,14 @@ class mainPage(Frame):
                 serverPath = serverPath + fileName
             reply, msg = Client_FTP.ChangeDirectory(serverPath)
             if reply:
+                listItems()
                 return
             tkMessageBox.showerror("Error", msg)
 
 
         openFileImg = Image.open("images/openFolder.png")
         openFileButImg = ImageTk.PhotoImage(openFileImg)
-        openFileButton = Button(self,image=openFileButImg,background="#12d168")
+        openFileButton = Button(self,image=openFileButImg,background="#12d168",command=openFolder)
         openFileButton.place(x=30,y=30,anchor=CENTER)
         openFileButton.image = openFileButImg
 
