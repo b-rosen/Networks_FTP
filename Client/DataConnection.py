@@ -31,8 +31,13 @@ def GetData(buffer=2048):
     dataList = []
     active = True
     counter = 10
-    while counter > 0:
-        msg = connection.recv(buffer)
+    errorCounter = 10
+    while counter > 0 and errorCounter > 0:
+        try:
+            msg = connection.recv(buffer)
+        except:
+            errorCounter -= 1
+            continue
         dataList.append(msg)
         if msg == '':
             counter -= 1
