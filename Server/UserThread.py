@@ -217,9 +217,10 @@ class UserThread (threading.Thread):
             self.Send('Not_Logged_In')
             return
 
+        connected = DataConnection.connected
         DataConnection.Connect()
 
-        if DataConnection.connected:
+        if connected:
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
@@ -274,9 +275,10 @@ class UserThread (threading.Thread):
             self.Send('Not_Logged_In')
             return
 
+        connected = DataConnection.connected
         DataConnection.Connect()
 
-        if DataConnection.connected:
+        if connected:
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
@@ -319,6 +321,7 @@ class UserThread (threading.Thread):
             self.Send('Argument_Error', 'No Pathname Specified')
             return
 
+        connected = DataConnection.connected
         DataConnection.Connect()
 
         if os.path.exists(self.baseDirectory + args[0]) == False:
@@ -335,7 +338,7 @@ class UserThread (threading.Thread):
             self.Send('Action_Not_Taken', 'Given Path is a Directory')
             return
 
-        if DataConnection.connected:
+        if connected:
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
@@ -360,6 +363,7 @@ class UserThread (threading.Thread):
         DataConnection.Close()
 
     def ReceiveFile(self, args):
+        connected = DataConnection.connected
         DataConnection.Connect()
 
         if self.loggedIn == False:
@@ -378,7 +382,7 @@ class UserThread (threading.Thread):
             self.Send('Action_Not_Taken', 'Given Path is a Directory')
             return
 
-        if DataConnection.connected:
+        if connected:
             self.Send('Data_Connection_Open')
         else:
             self.Send('File_Status_Ok')
@@ -422,7 +426,7 @@ class UserThread (threading.Thread):
         # TODO: keep receiving until CRLF char is found
         # Removes the CRLF command terminator
         message = msg.split('\r\n', 1)
-        message = message[0].split(" ")
+        message = message[0].split(" ", 1)
         command = str.upper(message.pop(0))
         return (command, message)
 
