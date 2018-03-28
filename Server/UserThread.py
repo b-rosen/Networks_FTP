@@ -235,22 +235,26 @@ class UserThread (threading.Thread):
             data = check_output(['dir', windowsPath],shell=True)
 
             data = data.split(CRLF)
-            data = data[7:-3]
-            temp = []
-            for lines in data:
-                lines = lines.split()
-                if lines[3] == "<DIR>":
-                    lines[1] = '5'
-                else:
-                    lines[1] = '1'
-                lines = ' '.join(lines)
-                temp.append(lines)
-            data = temp
+            if data != str():
+                data = data[7:-3]
+                temp = []
+                for lines in data:
+                    lines = lines.split()
+                    if lines[3] == "<DIR>":
+                        lines[1] = '5'
+                    else:
+                        lines[1] = '1'
+                    while len(lines) < 9:
+                        lines.insert(2, 'dummy')
+                    lines = ' '.join(lines)
+                    temp.append(lines)
+                data = temp
         else:
             data = check_output(['ls', '-l', dirPath])
-            data = data.split('\n')
-            data.pop(0)
-            data.pop(-1)
+            if data != str():
+                data = data.split('\n')
+                data.pop(0)
+                data.pop(-1)
         DataConnection.data = CRLF.join(data)
         data_thread = threading.Thread(None, DataConnection.SendData)
         data_thread.start()

@@ -164,8 +164,13 @@ def getList(listData):
 
     for line in lines:
         values = line.split()
+        extraInfo = 9 - len(values)
+        if extraInfo < 0:
+            singleFile =  ' '.join(values[extraInfo-1:])
+            values = values[:extraInfo-1]
+            values[-1] = singleFile
         entryName.append(values[len(values)-1])
-        if int(values[1]) > 1:
+        if values[0][0] == 'd':
             entryType.append("Directory")
         else:
             entryType.append("File")
@@ -194,7 +199,10 @@ def ListFiles(directoryPath):
     data_thread.start()
 
     while True:
-        code = Receive()
+        try:
+            code = Receive()
+        except timeout:
+            continue
         if code == replyCodes['Closing_Data_Connection']:
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'

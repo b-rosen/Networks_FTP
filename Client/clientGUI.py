@@ -29,6 +29,8 @@ class clientGUI(Tk):
         page = self.pages[pageToDisp]
         page.tkraise()
 
+    def getPage(self, pageName):
+        return self.pages[pageName]
 
 class serverSelectPage(Frame):
     def __init__(self,parent,gui):
@@ -121,6 +123,7 @@ class logInPage(Frame):
             result, message = Client_FTP.Login()
             if result:
                 Client_FTP.GetCurrentDir()
+                gui.getPage(mainPage).listItems()
                 gui.display(mainPage)
                 return
             tkMessageBox.showerror("Error",message)
@@ -145,159 +148,160 @@ class mainPage(Frame):
         logOutButton = Button(self,text="log out",background="#12d168",fg="#4d12b5",command=logOutGUI)
         logOutButton.place(x=590,y=30,anchor=CENTER)
 
-        serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
-        serverList.place(x=320,y=180,anchor=CENTER)
+        self.serverList = Listbox(self, height=10,width=30,fg="#4d12b5")
+        self.serverList.place(x=320,y=180,anchor=CENTER)
 
-        def listItems():
-            serverList.bind('<Double-Button-1>', downloadFileClick)
-            reply, msg = Client_FTP.PassiveMode()
-            if reply:
-                result,msg,names,types = Client_FTP.ListFiles('')
-                if result:
-                    serverList.delete(0,END)
-                    counter = 0
-                    for name in names:
-                        serverList.insert(END,name)
-                        if types[counter] == "Directory":
-                            serverList.itemconfig(counter,{'fg':'red'})
-                        counter += 1
-                    return
-            tkMessageBox.showerror("Error",msg)
+        self.serverList.bind('<Double-Button-1>', self.downloadFileClick)
 
-        def downloadFile():
-            try:
-                fileName = serverList.get(serverList.curselection()[0])
-            except Exception:
-                tkMessageBox.showerror("Error","Nothing selected")
+        listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",command=self.listItems)
+        listButton.place(x=320,y=80,width=150,anchor=CENTER)
+
+        downloadImg = Image.open("images/download.png")
+        downloadButImg = ImageTk.PhotoImage(downloadImg)
+        downloadButton = Button(self,image=downloadButImg,background="#12d168",command=self.downloadFile)
+        downloadButton.place(x=110,y=30,anchor=CENTER)
+        downloadButton.image = downloadButImg
+        downloadText = Label(self, text="Down",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        downloadText.place(x=110,y=58,anchor=CENTER)
+
+        uploadImg = Image.open("images/upload.png")
+        uploadButImg = ImageTk.PhotoImage(uploadImg)
+        uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=self.uploadFile)
+        uploadButton.place(x=150,y=30,anchor=CENTER)
+        uploadButton.image = uploadButImg
+        uploadText = Label(self, text="Upload",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        uploadText.place(x=150,y=58,anchor=CENTER)
+
+        openFileImg = Image.open("images/openFolder.png")
+        openFileButImg = ImageTk.PhotoImage(openFileImg)
+        openFileButton = Button(self,image=openFileButImg,background="#12d168",command=self.openFolder)
+        openFileButton.place(x=30,y=30,anchor=CENTER)
+        openFileButton.image = openFileButImg
+        openFileText = Label(self, text="Open",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        openFileText.place(x=30,y=58,anchor=CENTER)
+
+        upFileImg = Image.open("images/fileUp.png")
+        upFileButImg = ImageTk.PhotoImage(upFileImg)
+        upFileButton = Button(self,image=upFileButImg,background="#12d168",command =self.goUp)
+        upFileButton.place(x=70,y=30,anchor=CENTER)
+        upFileButton.image = upFileButImg
+        upFileText = Label(self, text="Go Up",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        upFileText.place(x=70,y=58,anchor=CENTER)
+
+    def downloadFile(self):
+        try:
+            fileName = self.serverList.get(self.serverList.curselection()[0])
+        except Exception:
+            tkMessageBox.showerror("Error","Nothing selected")
+            return
+        fileTest = fileName.split(".")
+        if len(fileTest) <= 1:
+            tkMessageBox.showerror("Error","the selected item is not a file that can be downloaded")
+            return
+        sFilePath = Client_FTP.currentDirectory + fileName
+        cFilePath = 'Downloads/'+fileName
+        reply, msg = Client_FTP.PassiveMode()
+        if reply:
+            result, msg = Client_FTP.Download(sFilePath,cFilePath)
+            if result:
+                tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully')
                 return
-            fileTest = fileName.split(".")
-            if len(fileTest) <= 1:
-                tkMessageBox.showerror("Error","the selected item is not a file that can be downloaded")
-                return
+        tkMessageBox.showerror("Error", msg)
+
+    def downloadFileClick(self, event):
+        try:
+            fileName = self.serverList.get(self.serverList.curselection()[0])
+        except Exception:
+            tkMessageBox.showerror("Error","Nothing selected")
+            return
+        fileTest = fileName.split(".")
+        if len(fileTest) > 1:
             sFilePath = Client_FTP.currentDirectory + fileName
             cFilePath = 'Downloads/'+fileName
             reply, msg = Client_FTP.PassiveMode()
             if reply:
                 result, msg = Client_FTP.Download(sFilePath,cFilePath)
                 if result:
-                    tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully')
+                    tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully' + sFilePath)
                     return
             tkMessageBox.showerror("Error", msg)
-
-        def downloadFileClick(event):
-            try:
-                fileName = serverList.get(serverList.curselection()[0])
-            except Exception:
-                tkMessageBox.showerror("Error","Nothing selected")
-                return
-            fileTest = fileName.split(".")
-            if len(fileTest) > 1:
-                sFilePath = Client_FTP.currentDirectory + fileName
-                cFilePath = 'Downloads/'+fileName
-                reply, msg = Client_FTP.PassiveMode()
-                if reply:
-                    result, msg = Client_FTP.Download(sFilePath,cFilePath)
-                    if result:
-                        tkMessageBox.showinfo('FTP Client', 'File Downloaded Successfully' + sFilePath)
-                        return
-                tkMessageBox.showerror("Error", msg)
-                return
-            else:
-                serverPath = Client_FTP.currentDirectory
-                if serverPath[-1] == '/':
-                    serverPath = serverPath + fileName
-                else:
-                    serverPath = serverPath + '/'
-                    serverPath = serverPath + fileName
-                reply, msg = Client_FTP.ChangeDirectory(serverPath)
-                if reply:
-                    listItems()
-                    tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
-                    return
-                tkMessageBox.showerror("Error", msg)
-
-        listButton = Button(self,text="list",background="#12d168",fg="#4d12b5",command=listItems)
-        listButton.place(x=320,y=80,width=150,anchor=CENTER)
-
-        downloadImg = Image.open("images/download.png")
-        downloadButImg = ImageTk.PhotoImage(downloadImg)
-        downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)
-        downloadButton.place(x=110,y=30,anchor=CENTER)
-        downloadButton.image = downloadButImg
-        downloadText = Label(self, text="Down",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
-        downloadText.place(x=110,y=58,anchor=CENTER)
-
-        def uploadFile():
-            fileToUploadPath = tkFileDialog.askopenfilename()
-            if fileToUploadPath == '':
-                return
-            serverPath = fileToUploadPath.split('/')
-            serverPath = Client_FTP.currentDirectory + '/' + serverPath[-1]
-            reply, msg = Client_FTP.PassiveMode()
-            if reply:
-                result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)
-                if result:
-                    listItems()
-                    tkMessageBox.showinfo('FTP Client', 'File uploaded Successfully')
-                    return
-            tkMessageBox.showerror("Error", msg)
-
-
-        uploadImg = Image.open("images/upload.png")
-        uploadButImg = ImageTk.PhotoImage(uploadImg)
-        uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)
-        uploadButton.place(x=150,y=30,anchor=CENTER)
-        uploadButton.image = uploadButImg
-        uploadText = Label(self, text="Upload",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
-        uploadText.place(x=150,y=58,anchor=CENTER)
-
-        def openFolder():
-            try:
-                fileName = serverList.get(serverList.curselection()[0])
-            except Exception:
-                tkMessageBox.showerror("Error","Nothing selected")
-                return
-            fileTest = fileName.split(".")
-            if len(fileTest) > 1:
-                tkMessageBox.showerror("Error","the selected item is not a directory")
-                return
+            return
+        else:
             serverPath = Client_FTP.currentDirectory
-            if serverPath[len(serverPath)-1] == '/':
+            if serverPath[-1] == '/':
                 serverPath = serverPath + fileName
             else:
                 serverPath = serverPath + '/'
                 serverPath = serverPath + fileName
             reply, msg = Client_FTP.ChangeDirectory(serverPath)
             if reply:
-                listItems()
+                self.listItems()
                 tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
                 return
             tkMessageBox.showerror("Error", msg)
 
 
-        openFileImg = Image.open("images/openFolder.png")
-        openFileButImg = ImageTk.PhotoImage(openFileImg)
-        openFileButton = Button(self,image=openFileButImg,background="#12d168",command=openFolder)
-        openFileButton.place(x=30,y=30,anchor=CENTER)
-        openFileButton.image = openFileButImg
-        openFileText = Label(self, text="Open",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
-        openFileText.place(x=30,y=58,anchor=CENTER)
-
-        def goUp():
-            reply, msg = Client_FTP.ChangeUp()
-            if reply:
-                listItems()
-                tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
+    def uploadFile(self):
+        fileToUploadPath = tkFileDialog.askopenfilename()
+        if fileToUploadPath == '':
+            return
+        serverPath = fileToUploadPath.split('/')
+        serverPath = Client_FTP.currentDirectory + '/' + serverPath[-1]
+        reply, msg = Client_FTP.PassiveMode()
+        if reply:
+            result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)
+            if result:
+                self.listItems()
+                tkMessageBox.showinfo('FTP Client', 'File uploaded Successfully')
                 return
-            tkMessageBox.showerror("Error", msg)
+        tkMessageBox.showerror("Error", msg)
 
-        upFileImg = Image.open("images/fileUp.png")
-        upFileButImg = ImageTk.PhotoImage(upFileImg)
-        upFileButton = Button(self,image=upFileButImg,background="#12d168",command =goUp)
-        upFileButton.place(x=70,y=30,anchor=CENTER)
-        upFileButton.image = upFileButImg
-        upFileText = Label(self, text="Go Up",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
-        upFileText.place(x=70,y=58,anchor=CENTER)
+    def openFolder(self):
+        try:
+            fileName = self.serverList.get(self.serverList.curselection()[0])
+        except Exception:
+            tkMessageBox.showerror("Error","Nothing selected")
+            return
+        fileTest = fileName.split(".")
+        if len(fileTest) > 1:
+            tkMessageBox.showerror("Error","the selected item is not a directory")
+            return
+        serverPath = Client_FTP.currentDirectory
+        if serverPath[len(serverPath)-1] == '/':
+            serverPath = serverPath + fileName
+        else:
+            serverPath = serverPath + '/'
+            serverPath = serverPath + fileName
+        reply, msg = Client_FTP.ChangeDirectory(serverPath)
+        if reply:
+            self.listItems()
+            tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
+            return
+        tkMessageBox.showerror("Error", msg)
+
+    def goUp(self):
+        reply, msg = Client_FTP.ChangeUp()
+        if reply:
+            self.listItems()
+            tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
+            return
+        tkMessageBox.showerror("Error", msg)
+
+
+    def listItems(self):
+        reply, msg = Client_FTP.PassiveMode()
+        if reply:
+            result,msg,names,types = Client_FTP.ListFiles('')
+            if result:
+                self.serverList.delete(0,END)
+                counter = 0
+                for name in names:
+                    self.serverList.insert(END,name)
+                    if types[counter] == "Directory":
+                        self.serverList.itemconfig(counter,{'fg':'red'})
+                    counter += 1
+                return
+        tkMessageBox.showerror("Error",msg)
 
 
 app = clientGUI()
