@@ -140,6 +140,8 @@ def ChangeDirectory(path):
 
 def ChangeUp():
     global currentDirectory
+    if currentDirectory == '/':
+        return (False, 'At root directory')
     Send('CDUP')
     code = Receive()
     if code == replyCodes['File_Action_Completed']:
@@ -361,12 +363,15 @@ def GetCurrentDir():
     Send('PWD')
     code, path = Receive(getMessage=True)
     if code == replyCodes['Pathname_Created']:
+        path = path.split('\"')[1]
+        print path
         if path[0] == '\"':
             path = path[1:]
         if path[-1] == '\"':
             path = path[:-1]
         path = path.replace('\"\"', '\"')
         currentDirectory = path
+        print 'current Dir: ' + path
         return (True, path)
     else:
         return codeCommands[code]()
