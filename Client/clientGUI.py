@@ -212,6 +212,7 @@ class mainPage(Frame):
                 reply, msg = Client_FTP.ChangeDirectory(serverPath)
                 if reply:
                     listItems()
+                    tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
                     return
                 tkMessageBox.showerror("Error", msg)
 
@@ -223,6 +224,8 @@ class mainPage(Frame):
         downloadButton = Button(self,image=downloadButImg,background="#12d168",command=downloadFile)
         downloadButton.place(x=110,y=30,anchor=CENTER)
         downloadButton.image = downloadButImg
+        downloadText = Label(self, text="Down",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        downloadText.place(x=110,y=58,anchor=CENTER)
 
         def uploadFile():
             fileToUploadPath = tkFileDialog.askopenfilename()
@@ -234,6 +237,7 @@ class mainPage(Frame):
             if reply:
                 result, msg = Client_FTP.Upload(fileToUploadPath,serverPath)
                 if result:
+                    listItems()
                     tkMessageBox.showinfo('FTP Client', 'File uploaded Successfully')
                     return
             tkMessageBox.showerror("Error", msg)
@@ -244,6 +248,8 @@ class mainPage(Frame):
         uploadButton = Button(self,image=uploadButImg,text="Upload",background="#12d168",command=uploadFile)
         uploadButton.place(x=150,y=30,anchor=CENTER)
         uploadButton.image = uploadButImg
+        uploadText = Label(self, text="Upload",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        uploadText.place(x=150,y=58,anchor=CENTER)
 
         def openFolder():
             try:
@@ -264,6 +270,7 @@ class mainPage(Frame):
             reply, msg = Client_FTP.ChangeDirectory(serverPath)
             if reply:
                 listItems()
+                tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
                 return
             tkMessageBox.showerror("Error", msg)
 
@@ -273,11 +280,14 @@ class mainPage(Frame):
         openFileButton = Button(self,image=openFileButImg,background="#12d168",command=openFolder)
         openFileButton.place(x=30,y=30,anchor=CENTER)
         openFileButton.image = openFileButImg
+        openFileText = Label(self, text="Open",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        openFileText.place(x=30,y=58,anchor=CENTER)
 
         def goUp():
             reply, msg = Client_FTP.ChangeUp()
             if reply:
                 listItems()
+                tkMessageBox.showinfo('FTP Client', 'Folder changed Successfully')
                 return
             tkMessageBox.showerror("Error", msg)
 
@@ -286,6 +296,8 @@ class mainPage(Frame):
         upFileButton = Button(self,image=upFileButImg,background="#12d168",command =goUp)
         upFileButton.place(x=70,y=30,anchor=CENTER)
         upFileButton.image = upFileButImg
+        upFileText = Label(self, text="Go Up",background="#12d168",fg="#4d12b5",font=("Times New Roman",9))
+        upFileText.place(x=70,y=58,anchor=CENTER)
 
 
 app = clientGUI()
