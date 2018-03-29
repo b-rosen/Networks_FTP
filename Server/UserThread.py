@@ -241,9 +241,9 @@ class UserThread (threading.Thread):
                 for lines in data:
                     lines = lines.split()
                     if lines[3] == "<DIR>":
-                        lines[1] = '5'
+                        lines[0] = 'd'
                     else:
-                        lines[1] = '1'
+                        lines[0] = '-'
                     while len(lines) < 9:
                         lines.insert(2, 'dummy')
                     lines = ' '.join(lines)
