@@ -271,7 +271,11 @@ def Download(filePath, savePath):
     data_thread.start()
 
     while True:
-        code = Receive()
+        try:
+            code = Receive()
+        except timeout:
+            continue
+
         if code == replyCodes['Closing_Data_Connection']:
             DataConnection.Close()
             msg = 'Transfer complete - Closing data connection'
@@ -334,13 +338,13 @@ def Upload(filePath,serverPath):
             print msg
             return (True, msg)
         elif code == replyCodes['File_Action_Completed']:
+            DataConnection.Close()
             msg = 'Transfer complete'
             print msg
             return (True, msg)
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
-    DataConnection.Close()
     c_socket.settimeout(None)
     msg = 'Successfully sent data'
     return (True, msg)
