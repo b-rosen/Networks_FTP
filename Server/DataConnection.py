@@ -35,7 +35,7 @@ def GetData(buffer=2048):
     while counter > 0 and errorCounter > 0:
         try:
             msg = connection.recv(buffer)
-        except:
+        except Exception:
             errorCounter -= 1
             continue
         dataList.append(msg)

@@ -35,7 +35,7 @@ def GetData(buffer=2048):
     while counter > 0 and errorCounter > 0:
         try:
             msg = connection.recv(buffer)
-        except:
+        except Exception:
             errorCounter -= 1
             continue
         dataList.append(msg)
@@ -51,7 +51,7 @@ def SendData():
     global active, connection, data
     active = True
     print 'DC: Sending Data'
-    sendCounter = 10
+    sendCounter = 20
     while sendCounter > 0:
         try:
             connection.sendall(data)
@@ -76,7 +76,15 @@ def Connect():
     if initiateConn:
         sleep(0.1)
         connection = socket(AF_INET, SOCK_STREAM)
-        connection.connect((address, port))
+        connectCounter = 20
+        while connectCounter > 0:
+            try:
+                connection.connect((address, port))
+            except Exception:
+                connectCounter -= 1
+                continue
+            break
+
         print 'DC: Initiated Connection'
     else:
         data_socket = socket(AF_INET, SOCK_STREAM)
