@@ -233,6 +233,40 @@ def ChangePort(newPort):
     else:
         return codeCommands[code]()
 
+def CheckType(type1, type2):
+    sendString = ["TYPE",type1,type2]
+    sendString = ' '.join(sendString)
+    Send(sendString)
+    code = Receive()
+    if code == replyCodes['Command_OK']:
+        msg = 'The Server supports ASCII Non-print'
+        print msg
+        return (True,msg)
+    else:
+        return codeCommands[code]()
+    
+def CheckMode(mode):
+    sendString = "MODE " + mode
+    Send(sendString)
+    code = Receive()
+    if code == replyCodes['Command_OK']:
+        msg = 'The Server supports stream mode'
+        print msg
+        return (True,msg)
+    else:
+        return codeCommands[code]()
+
+def CheckStructure(structure):
+    sendString = "STRU " + structure
+    Send(sendString)
+    code = Receive()
+    if code == replyCodes['Command_OK']:
+        msg = 'The Server supports file mode'
+        print msg
+        return (True,msg)
+    else:
+        return codeCommands[code]()
+
 def PassiveMode():
     Send('PASV')
     code, message = Receive(getMessage=True)
@@ -498,6 +532,11 @@ def NameNotAllowed():
     print msg
     return (False,msg)
 
+def CommandNotImplementedParam():
+    msg = "Command not implemented for that parameter"
+    print msg
+    return (False,msg)
+
 
 codeCommands = {
     '110': Restart,
@@ -517,6 +556,7 @@ codeCommands = {
     '501': BadArgument,
     '502': NoCommand,
     '503': BadCommandOrder,
+    '504': CommandNotImplementedParam,
     '530': LoginFail,
     '532': NoAccount,
     '550': FileActionFailed,

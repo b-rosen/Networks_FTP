@@ -22,6 +22,7 @@ Syntax_Error 500
 Argument_Error 501
 Command_Not_Implemented 502
 Bad_Sequence 503
+Not_Implemented_Param 504
 Not_Logged_In 530
 Need_Account 532
 Action_Not_Taken 550

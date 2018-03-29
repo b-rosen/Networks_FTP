@@ -125,6 +125,9 @@ class logInPage(Frame):
                 Client_FTP.GetCurrentDir()
                 gui.getPage(mainPage).listItems()
                 gui.display(mainPage)
+                Client_FTP.CheckMode('S')
+                Client_FTP.CheckType('A','N')
+                Client_FTP.CheckStructure('F')
                 return
             tkMessageBox.showerror("Error",message)
 

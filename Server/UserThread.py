@@ -198,6 +198,26 @@ class UserThread (threading.Thread):
         DataConnection.port = int(hostPort[4]) * 256 + int(hostPort[5])
         DataConnection.initiateConn = True
         self.Send('Command_OK')
+    
+    def CheckType(self,args):
+        testType = args[0].split()
+        if testType[0] == 'A' and testType[1] == 'N':
+            self.Send('Command_OK')
+        else:
+            self.Send('Not_Implemented_Param')
+    
+    def CheckMode(self,args):
+        if args[0] == 'S':
+            self.Send('Command_OK')
+        else:
+            self.send('Not_Implemented_Param')
+            
+    def CheckStructure(self,args):
+        if args[0] == 'F':
+            self.Send('Command_OK')
+        else:
+            self.send('Not_Implemented_Param')
+            
 
     def PassiveMode(self, args):
         if self.loggedIn == False:
@@ -441,6 +461,9 @@ class UserThread (threading.Thread):
         'CWD': ChangeDirectory,
         'CDUP': ChangeUp,
         'QUIT': Logout,
+        'MODE': CheckMode,
+        'TYPE': CheckType,
+        'STRU': CheckStructure,
         'REIN': Reinitialise,
         'RETR': SendFile,
         'STOR': ReceiveFile,
