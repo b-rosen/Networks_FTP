@@ -2,7 +2,10 @@ from socket import *
 import threading
 import DataConnection
 
+''' All Code in this file is Written by Shane House (749524) '''
+#Opens the file containing the responses and codes
 responsesFile = open('../Command_Response_Database/response.txt', 'r')
+#Creates an array of the responses and their codes
 replyCodes = {}
 for line in responsesFile:
     msg, code = line.split(' ', 1)
@@ -37,9 +40,10 @@ s_port = 21
 username = 'anonymous'
 password = ''
 # ------------------------------------------
-
+#Defines the file endline
 CRLF = '\r\n'
 
+#splits the reply from the message and returns them
 def ParseReply(msg):
     reply = msg.split('\r\n', 1)
     if(msg != ''):
@@ -52,6 +56,8 @@ def ParseReply(msg):
             message = str()
     return (code, message)
 
+#recievs a reply from the server and returns either a code and a message
+#or just a code
 def Receive(bufferSize=2048, getMessage=False):
     message = c_socket.recv(bufferSize)
     code, msg = ParseReply(message)
@@ -60,10 +66,14 @@ def Receive(bufferSize=2048, getMessage=False):
         return str(code), msg
     return str(code)
 
+#Sends a code to the server
 def Send(code):
     code = code + CRLF
     c_socket.send(code)
 
+#Creates a socket and attempts to establish the control connection with 
+#the server. it returns true or false depending on whether it was 
+#successful or not as well as a message describing the responce    
 def StartUp(site, port):
     global c_socket, connected
     c_socket = socket(AF_INET, SOCK_STREAM)
@@ -80,6 +90,9 @@ def StartUp(site, port):
         return (True,msg)
     return codeCommands[code]()
 
+#Sends the USER command to the server along with the username passed to the
+#function, it then waits for a reply and returns true or false depending on the 
+#outcome with a message that discribes the outcome
 def Login():
     Send('USER ' + username)
     code = Receive()
@@ -87,6 +100,8 @@ def Login():
         return (True, "Logged in")
     return codeCommands[code]()
 
+#Sends the password to the server if asked for one. Returns true or false depending
+#on the outcome with a message that discribes the outcome.
 def EnterPassword():
     Send('PASS ' + password)
     code = Receive()
@@ -102,6 +117,8 @@ def EnterPassword():
     else:
         return codeCommands[code]()
 
+#Sends the account information to the server and returns true or false depending
+#on the outcomes with a message that discribes the outcome
 def EnterAccount():
     Send('ACCT ' + account)
     code = Receive()
@@ -112,11 +129,15 @@ def EnterAccount():
         return (True, msg)
     return codeCommands[code]()
 
+#A function called when log in fails returns false and a message saying not logged
+#in
 def LoginFail():
     msg = 'Not logged in'
     print msg
     return (False, msg)
 
+#Sends the command to change the server directory to the given path, returns true 
+# or false depending on the outcome and a message that describes the outcome
 def ChangeDirectory(path):
     global currentDirectory
 
@@ -132,6 +153,8 @@ def ChangeDirectory(path):
     else:
         return codeCommands[code]()
 
+#Sends the command to the server to make it change to its parent directory and
+#returns true or false depending on the outcome
 def ChangeUp():
     global currentDirectory
     if currentDirectory == '/':
@@ -148,6 +171,9 @@ def ChangeUp():
     else:
         return codeCommands[code]()
 
+#Formats list data retrieved from the data connection, removing unneeded information
+#and determining whether a field is a file of folder, returns 2 arrays one holding
+#The file names and the other holding the types
 def getList(listData):
     entryType = []
     entryName = []
@@ -169,6 +195,9 @@ def getList(listData):
             entryType.append("File")
     return (entryName,entryType)
 
+#sends the command to retrieve a list of file information from the server.
+#returns true or false depending on the outcome, a message describing the outcome
+#And 2 arrays, one containing the file names, and the other containing the file types
 def ListFiles(directoryPath):
     if directoryPath == '':
         Send('LIST')
@@ -211,6 +240,8 @@ def ListFiles(directoryPath):
             DataConnection.Close()
             return codeCommands[code](),[],[]
 
+#Sends the port command to the server using the port number specified. returns 
+#true or false depending on the outcome and a message describing the outcome
 def ChangePort(newPort):
     DataConnection.port = int(newPort)
     cmdAddress = gethostbyname(gethostname()).replace('.', ',')
@@ -226,6 +257,9 @@ def ChangePort(newPort):
     else:
         return codeCommands[code]()
 
+#Sends the type command to the server and checks if the server supports the input
+#type. it returns true or false depending on the outcome and a message describing
+#the outcome
 def CheckType(type1, type2):
     sendString = ["TYPE",type1,type2]
     sendString = ' '.join(sendString)
@@ -238,6 +272,9 @@ def CheckType(type1, type2):
     else:
         return codeCommands[code]()
 
+#Sends the mode command to the server to check whether is supports the input 
+#transfer mode. Returns true or false depending on the outcome and a message 
+#describing the outcome
 def CheckMode(mode):
     sendString = "MODE " + mode
     Send(sendString)
@@ -249,6 +286,8 @@ def CheckMode(mode):
     else:
         return codeCommands[code]()
 
+#Sends the structure command to the server to check if it supports the input type
+#returns true or false depending on the outcome and a message describing the outcome
 def CheckStructure(structure):
     sendString = "STRU " + structure
     Send(sendString)
@@ -260,6 +299,9 @@ def CheckStructure(structure):
     else:
         return codeCommands[code]()
 
+#Sends the pasv command to the server, sets the data connection address and port to reflect
+#what is returned by the server. It returns true or false depending on the outcome and a 
+#message that describes the outcome
 def PassiveMode():
     Send('PASV')
     code, message = Receive(getMessage=True)
@@ -279,6 +321,10 @@ def PassiveMode():
     else:
         return codeCommands[code]()
 
+#Sends the retr command to the server along with the given path to the file the
+#server needs to send. It then establishes a data connection. After
+#this it writes to a file with the name specified by the second parameter. returns
+#true or false and a message that describes the outcome of this action.
 def Download(filePath, savePath):
     Send('RETR '+ filePath)
 
@@ -322,6 +368,10 @@ def Download(filePath, savePath):
             DataConnection.Close()
             return codeCommands[code]()
 
+#This function sends the stor command to the server. It then establishes a data
+#connection and then opens and reads the file to be uploaded and sends it over
+#the data connection. returns true or false and a message depending on the outcome
+#of the action
 def Upload(filePath,serverPath):
     global c_socket
     Send('STOR ' + serverPath)
@@ -388,6 +438,7 @@ def Upload(filePath,serverPath):
     msg = 'Successfully sent data'
     return (True, msg)
 
+#Logs the user out of the server, also runs when the client window is closed
 @atexit.register
 def Logout():
     global connected
@@ -408,6 +459,9 @@ def Logout():
         print msg
         return (False, msg)
 
+#sends the print current directory command to the server and sets the currentDirectory
+#global variable to a slightly edited version of what is returned by the server
+#Returns true or false depending on the outcome and a message describing the outcome
 def GetCurrentDir():
     global currentDirectory
 
@@ -427,6 +481,8 @@ def GetCurrentDir():
     else:
         return codeCommands[code]()
 
+#Sends the no op command to the server returns true or false and a message 
+#depending on the outcome
 def NoOp():
     Send('NOOP')
     code = Receive()
@@ -439,9 +495,15 @@ def NoOp():
         print msg
         return (True, msg)
 
+#Closes the socket
 def CloseConnection():
     c_socket.close()
 
+#The functions below all just return either true or false and a message
+#They do not perform an function other than to be called by the functions above
+#to accurately describe the code sent back by the server. i.e the server sends
+#back a reply and the code will be looked up in a table below, and one of these 
+#functions will be called to return the correct boolian and message to the user.
 def BadSyntax():
     msg = 'Syntax is incorrect'
     print msg
@@ -543,6 +605,8 @@ def CommandNotImplementedParam():
     return (False,msg)
 
 
+#This table runs the needed function above based on the reply code returned by 
+#the server
 codeCommands = {
     '110': Restart,
     '125': DCOpen,
