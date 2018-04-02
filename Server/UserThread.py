@@ -456,7 +456,7 @@ class UserThread(threading.Thread):
     def PrintCurrentDir(self, args):
         if os.path.exists(self.baseDirectory + self.currentDirectory):
             dir = self.currentDirectory.replace('\"', '\"\"')
-            self.Send('Pathname_Created', '\"' + dir + '\"' + 'Was created')
+            self.Send('Pathname_Created', '\"' + dir + '\"' + 'Was requested')
         else:
             self.Send('Action_Not_Taken')
 
