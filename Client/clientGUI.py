@@ -197,7 +197,8 @@ class mainPage(Frame):
         
         #Bellow are the buttons pressed to change directory, upload and download
         #Files there is extra code here to display images for these buttons.
-        #All the images were sourced from iconarchive.com
+        #All the images were created by Papirus Development Team and are free
+        #for commercial use and can be fount here: http://www.iconarchive.com/show/papirus-places-icons-by-papirus-team.html
         downloadImg = Image.open("images/download.png")
         downloadButImg = ImageTk.PhotoImage(downloadImg)
         downloadButton = Button(self,image=downloadButImg,background="#12d168",command=self.downloadFile)
