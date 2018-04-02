@@ -244,7 +244,7 @@ def CheckType(type1, type2):
         return (True,msg)
     else:
         return codeCommands[code]()
-    
+
 def CheckMode(mode):
     sendString = "MODE " + mode
     Send(sendString)
@@ -379,7 +379,19 @@ def Upload(filePath,serverPath):
         elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
             DataConnection.Close()
             return codeCommands[code]()
+    DataConnection.Close()
     c_socket.settimeout(None)
+    code = Receive()
+    if code == replyCodes['Closing_Data_Connection']:
+        msg = 'Transfer complete - Closing data connection'
+        print msg
+        return (True, msg)
+    elif code == replyCodes['File_Action_Completed']:
+        msg = 'Transfer complete'
+        print msg
+        return (True, msg)
+    elif code == replyCodes['Cant_Open_Data_Connection'] or code == replyCodes['Connection_Closed'] or code == replyCodes['Action_Aborted_Local']:
+        return codeCommands[code]()
     msg = 'Successfully sent data'
     return (True, msg)
 

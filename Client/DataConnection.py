@@ -36,11 +36,14 @@ def GetData(buffer=2048):
         try:
             msg = connection.recv(buffer)
         except Exception:
-            errorCounter -= 1
+            if msg == '':
+                counter -= 1
+            else:
+                errorCounter -= 1
             continue
-        dataList.append(msg)
         if msg == '':
             counter -= 1
+        dataList.append(msg)
     datastr = str()
     datastr = ''.join(dataList)
     data = datastr

@@ -41,6 +41,8 @@ def GetData(buffer=2048):
             else:
                 errorCounter -= 1
             continue
+        if msg == '':
+            counter -= 1
         dataList.append(msg)
     datastr = str()
     datastr = ''.join(dataList)
