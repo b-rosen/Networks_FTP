@@ -32,10 +32,10 @@ import atexit
 
 # For Mirror (given in brief)
 
-# s_name = 'mirror.ac.za'
-# s_port = 21
-# username = 'anonymous'
-# password = ''
+s_name = 'mirror.ac.za'
+s_port = 21
+username = 'anonymous'
+password = ''
 # ------------------------------------------
 
 CRLF = '\r\n'
@@ -55,12 +55,6 @@ def ParseReply(msg):
 def Receive(bufferSize=2048, getMessage=False):
     message = c_socket.recv(bufferSize)
     code, msg = ParseReply(message)
-    # if code == "QUIT":
-    #     commandList[cmd](args)
-    #     return
-    # if code == replyCodes['Syntax_Error']:
-    #     print 'Syntax Error'
-    #     return '-1'
     print str(code) + " " + msg
     if getMessage:
         return str(code), msg
@@ -155,7 +149,6 @@ def ChangeUp():
         return codeCommands[code]()
 
 def getList(listData):
-    #listData = "test 1 test test bits month date time fileName1\r\ntest 1 test test bits month date time fileName2\r\ntest 1 test test bits month date time fileName3\r\ntest 4 test test bits month date time directoryName1"
     entryType = []
     entryName = []
     lines = listData.split('\r\n')
@@ -576,16 +569,3 @@ codeCommands = {
     '552': AbortStorage,
     '553': NameNotAllowed
 }
-
-''' Testing Code '''
-#StartUp(s_name, s_port)
-#Login()
-#print GetCurrentDir()
-#ChangeDirectory('/test/')
-#print GetCurrentDir()
-# ChangePort(10000)
-# PassiveMode()
-# if ListFiles('/'):
-#     print DataConnection.data
-#PassiveMode()
-#Download('/testfile.txt', 'testfile.txt')

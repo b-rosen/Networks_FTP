@@ -2,6 +2,8 @@ from socket import *
 import UserThread
 from socket import gethostname, gethostbyname
 
+''' All code in this file is Written by Benjamin Rosen (858324) '''
+
 # Class for multithreading: each object of this class has a run funtion which performs the receiving and sending of the message from the client
 
 s_port = 2400
