@@ -35,10 +35,10 @@ import atexit
 
 # For Mirror (given in brief)
 
-s_name = 'mirror.ac.za'
-s_port = 21
-username = 'anonymous'
-password = ''
+# s_name = 'mirror.ac.za'
+# s_port = 21
+# username = 'anonymous'
+# password = ''
 # ------------------------------------------
 #Defines the file endline
 CRLF = '\r\n'
@@ -71,9 +71,9 @@ def Send(code):
     code = code + CRLF
     c_socket.send(code)
 
-#Creates a socket and attempts to establish the control connection with 
-#the server. it returns true or false depending on whether it was 
-#successful or not as well as a message describing the responce    
+#Creates a socket and attempts to establish the control connection with
+#the server. it returns true or false depending on whether it was
+#successful or not as well as a message describing the responce
 def StartUp(site, port):
     global c_socket, connected
     c_socket = socket(AF_INET, SOCK_STREAM)
@@ -91,7 +91,7 @@ def StartUp(site, port):
     return codeCommands[code]()
 
 #Sends the USER command to the server along with the username passed to the
-#function, it then waits for a reply and returns true or false depending on the 
+#function, it then waits for a reply and returns true or false depending on the
 #outcome with a message that discribes the outcome
 def Login():
     Send('USER ' + username)
@@ -136,7 +136,7 @@ def LoginFail():
     print msg
     return (False, msg)
 
-#Sends the command to change the server directory to the given path, returns true 
+#Sends the command to change the server directory to the given path, returns true
 # or false depending on the outcome and a message that describes the outcome
 def ChangeDirectory(path):
     global currentDirectory
@@ -240,7 +240,7 @@ def ListFiles(directoryPath):
             DataConnection.Close()
             return codeCommands[code](),[],[]
 
-#Sends the port command to the server using the port number specified. returns 
+#Sends the port command to the server using the port number specified. returns
 #true or false depending on the outcome and a message describing the outcome
 def ChangePort(newPort):
     DataConnection.port = int(newPort)
@@ -272,8 +272,8 @@ def CheckType(type1, type2):
     else:
         return codeCommands[code]()
 
-#Sends the mode command to the server to check whether is supports the input 
-#transfer mode. Returns true or false depending on the outcome and a message 
+#Sends the mode command to the server to check whether is supports the input
+#transfer mode. Returns true or false depending on the outcome and a message
 #describing the outcome
 def CheckMode(mode):
     sendString = "MODE " + mode
@@ -300,7 +300,7 @@ def CheckStructure(structure):
         return codeCommands[code]()
 
 #Sends the pasv command to the server, sets the data connection address and port to reflect
-#what is returned by the server. It returns true or false depending on the outcome and a 
+#what is returned by the server. It returns true or false depending on the outcome and a
 #message that describes the outcome
 def PassiveMode():
     Send('PASV')
@@ -481,7 +481,7 @@ def GetCurrentDir():
     else:
         return codeCommands[code]()
 
-#Sends the no op command to the server returns true or false and a message 
+#Sends the no op command to the server returns true or false and a message
 #depending on the outcome
 def NoOp():
     Send('NOOP')
@@ -500,9 +500,9 @@ def CloseConnection():
     c_socket.close()
 
 #The functions below all just return either true or false and a message
-#They do not perform an function other than to be called by the functions above
+#They do not perform a function other than to be called by the functions above
 #to accurately describe the code sent back by the server. i.e the server sends
-#back a reply and the code will be looked up in a table below, and one of these 
+#back a reply and the code will be looked up in a table below, and one of these
 #functions will be called to return the correct boolian and message to the user.
 def BadSyntax():
     msg = 'Syntax is incorrect'
@@ -605,7 +605,7 @@ def CommandNotImplementedParam():
     return (False,msg)
 
 
-#This table runs the needed function above based on the reply code returned by 
+#This dictionary runs the needed function above based on the reply code returned by
 #the server
 codeCommands = {
     '110': Restart,
