@@ -1,5 +1,6 @@
 from socket import *
 import UserThread
+from socket import gethostname, gethostbyname
 
 # Class for multithreading: each object of this class has a run funtion which performs the receiving and sending of the message from the client
 
@@ -12,6 +13,7 @@ s_socket.bind(('', s_port))
 threads = []
 conn_ID = 0
 # Every time a connection is requested, accept the connection and pass it off to a newly created thread.
+print 'Server IP Address: ' + gethostbyname(gethostname())
 while True:
     s_socket.listen(1)
     print 'Ready to receive \n\n'
