@@ -24,7 +24,7 @@ Command_Not_Implemented 502
 Bad_Sequence 503
 Not_Implemented_Param 504
 Not_Logged_In 530
-Need_Account 532
+Need_Account_Error 532
 Action_Not_Taken 550
 Page_Type_Unknown 551
 Exceeded_Storage 552

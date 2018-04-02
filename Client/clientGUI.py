@@ -4,6 +4,8 @@ import tkFileDialog
 from PIL import Image, ImageTk
 import Client_FTP
 
+''' All Code in this file is Written by Shane House (749524) '''
+
 class clientGUI(Tk):
     def __init__(self,*args,**kwargs):
         Tk.__init__(self,*args,**kwargs)
