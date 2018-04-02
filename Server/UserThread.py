@@ -46,7 +46,6 @@ class UserThread(threading.Thread):
     # This is the main loop of the thread. It will keep receiving commands from the client and calling a function to execute the command.
     def run(self):
         cmd, msg = self.Receive()
-            # TODO: add checks for other stuff
         self.ExecuteCommand(cmd, msg)
 
 # Written by Benjamin Rosen (858324)
